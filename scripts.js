@@ -11,6 +11,7 @@ var URLS = [
 ];
 
 var boroR = {"Manhattan":"1","Bronx":"2","Brooklyn":"3","Queens":"4","Staten Island":"5"};
+var boroRCAPS = {"MANHATTAN":"1","BRONX":"2","BROOKLYN":"3","QUEENS":"4","STATEN ISLAND":"5"};
 
 var boroughs = { // in this one we build the "dataframe"
     "1": {boro_name:"Manhattan",color: "#06e908",districts:[]},//1
@@ -20,157 +21,207 @@ var boroughs = { // in this one we build the "dataframe"
     "5": {boro_name:"Staten Island",color: "#dbd318",districts:[]}//5
 };
 
+//new way to handle data, it is better and more organized
 var geoshapesData,neighborhoodData,housingData,museumsData,artData,crimeData;
 
-
-function loadBasicInfo(){
-    console.log("loading geoshapes...");
-    $.getJSON(URLS[0].url,function(data){//geoshapes
-        let len = data.features.length;
-        for(let i = 0 ; i <len;i++){
-            let boroCD = data.features[i].properties.BoroCD/100.0>>0;
-            let boroID = data.features[i].properties.BoroCD - (boroCD*100);
-            let mPol = createPolygon(data.features[i].geometry)
-            mPol.setOptions({
-                fillColor:boroughs[boroCD].color,
-                strokeColor:"#5a5e4b",
-                strokeOpacity:0.5,
-                strokeWeight: 2
-            });
-             //Template of values for each boro
-            boroughs[boroCD].districts.push({
-                number:boroID,
-                poly: data.features[i].geometry,
-                mapsPolygon: mPol,//polygon
-                borough_center: mPol.my_getBounds().getCenter(),
-                neighborhoods: [],
-                housing: [],
-                museums: [],
-                art: [],
-                crimes: [],
-                number_crimes: 0,
-                number_units: 0,
-                distance: 0,
-                number_museums_art: 0
-            });
-        }
-    }).fail(function(){
-        alert("Couldn't load a dataset. please reload the page!");
-    }).done(function(){
-        console.log("loading neighborhoods...");
-        $.getJSON(URLS[1].url,function(data){ //Neighborhood names
-            let lenData = data.data.length;
-            for(let i = 0 ; i < lenData; i++){
-                let id = boroR[data.data[i][16]];
-                let point = parser(data.data[i][9]);
-                let lenDist = boroughs[id].districts.length;
-                for(let j = 0 ; j < lenDist ; j++){
-                    if(inOutMapsQuery(point,boroughs[id].districts[j].mapsPolygon)){
-                        boroughs[id].districts[j].neighborhoods.push({
-                            name:data.data[i][10],
-                            location:point,
-                            mapsLocation: new google.maps.Marker({
-                                position:point,
-                                icon:createIcon("src/neighborhood.png"),
-                                title: data.data[i][10]
-                            })
-                        });
-                        break;
-                    }
-                }
-            }
-        }).done(function(){
-            console.log("loading other assets...");
-            loadHousing();
-            loadMuseums();
-        }).fail(function(){alert("Couldn't load a dataset. please reload the page!");});
-
-    });
+function processGeoshapes(){
+    let len = geoshapesData.length;
+    for(let i = 0 ; i <len;i++){
+        let boroCD = geoshapesData[i].properties.BoroCD/100.0>>0;
+        let boroID = geoshapesData[i].properties.BoroCD - (boroCD*100);
+        let mPol = createPolygon(geoshapesData[i].geometry)
+        mPol.setOptions({
+            fillColor:boroughs[boroCD].color,
+            strokeColor:"#5a5e4b",
+            strokeOpacity:0.5,
+            strokeWeight: 2
+        });
+         //Template of values for each boro
+        boroughs[boroCD].districts.push({
+            number:boroID,
+            poly: geoshapesData[i].geometry,
+            mapsPolygon: mPol,//polygon
+            borough_center: mPol.my_getBounds().getCenter(),
+            neighborhoods: [],
+            housing: [],
+            museums: [],
+            art: [],
+            crimes: [],
+            number_crimes: 0,
+            number_units: 0,
+            distance: 0,
+            number_museums_art: 0
+        });
+    }
 }
 
-function loadHousing(){
-    $.getJSON(URLS[2].url,function(data){ // housing, note, I filter housing and only consider houses with lat lng defined
-        let lenData = data.data.length;
-        for(let i = 0 ; i < lenData; i++){
-            let id = boroR[data.data[i][15]];
-            if(data.data[i][23]==null)continue; // exclude housese without lat lng
-            let point = {lat: parseFloat(data.data[i][23]) , lng:parseFloat(data.data[i][24])};
-            let lenDist = boroughs[id].districts.length;
-            for(let j = 0 ; j < lenDist ; j++){
-                if(inOutMapsQuery(point,boroughs[id].districts[j].mapsPolygon)){
-                    boroughs[id].districts[j].housing.push({
-                        name:data.data[i][9],
+function processNeighborhoods(){
+    let lenData = neighborhoodData.length;
+    for(let i = 0 ; i < lenData; i++){
+        let id = boroR[neighborhoodData[i][16]];
+        let point = parser(neighborhoodData[i][9]);
+        let lenDist = boroughs[id].districts.length;
+        for(let j = 0 ; j < lenDist ; j++){
+            if(inOutMapsQuery(point,boroughs[id].districts[j].mapsPolygon)){
+                boroughs[id].districts[j].neighborhoods.push({
+                    name:neighborhoodData[i][10],
+                    location:point,
+                    mapsLocation: new google.maps.Marker({
+                        position:point,
+                        icon:createIcon("src/neighborhood.png"),
+                        title: neighborhoodData[i][10]
+                    })
+                });
+                break;
+            }
+        }
+    }
+}
+
+function processHousing(){
+    let lenData = housingData.length;
+    for(let i = 0 ; i < lenData; i++){
+        let id = boroR[housingData[i][15]];
+        if(housingData[i][23]==null)continue; // exclude housese without lat lng
+        let point = {lat: parseFloat(housingData[i][23]) , lng:parseFloat(housingData[i][24])};
+        let lenDist = boroughs[id].districts.length;
+        for(let j = 0 ; j < lenDist ; j++){
+            if(inOutMapsQuery(point,boroughs[id].districts[j].mapsPolygon)){
+                boroughs[id].districts[j].housing.push({
+                    name:housingData[i][9],
+                    location:point,
+                    mapsLocation: new google.maps.Marker({
+                        position:point,
+                        icon: createIcon("src/house.png"),
+                        title: housingData[i][9]
+                    })
+                });
+                boroughs[id].districts[j].number_units += parseInt(housingData[i][31]);//add low income units
+                break;
+            }
+        }
+    }
+}
+
+function processMuseums(){
+    let lenData = museumsData.length;
+    for(let i = 0 ; i < lenData ; i++){
+        let id = -1;
+        let point = parser(museumsData[i][8]);
+        //quite greedy, but there is no other way but check all districts because the data has no district info
+        for(let j = 1 ; j <=5 ; j++){//boro
+            let lenDist = boroughs[j].districts.length;
+            for(let k = 0 ; k < lenDist ; k++){//district
+                if(inOutMapsQuery(point,boroughs[j].districts[k].mapsPolygon)){
+                    boroughs[j].districts[k].museums.push({
+                        name: museumsData[i][9],
                         location:point,
                         mapsLocation: new google.maps.Marker({
                             position:point,
-                            icon: createIcon("src/house.png"),
-                            title: data.data[i][9]
-                        })
-                    });
-                    boroughs[id].districts[j].number_units += parseInt(data.data[i][31]);//add low income units
-                    break;
+                            icon: createIcon("src/museum.png"),
+                            title:museumsData[i][9]
+                        }),
+                        address: museumsData[i][12] + " - " + museumsData[i][13],
+                        tel: museumsData[i][10],
+                        url: museumsData[i][11]
+                    })
                 }
             }
         }
-    }).done(function(){
-        console.log("Housing loaded...");
-    }).fail(function(){alert("Couldn't load a dataset. please reload the page!");});
+        if(id == -1)continue;
+    }
 }
 
-function loadMuseums(){
-    $.getJSON(URLS[3].url,function(data){
-        let lenData = data.data.length;
-        for(let i = 0 ; i < lenData ; i++){
-            let id = -1;
-            let point = parser(data.data[i][8]);
-            //quite greedy, but there is no other way but check all districts because the data has no district info
-            for(let j = 1 ; j <=5 ; j++){//boro
-                let lenDist = boroughs[j].districts.length;
-                for(let k = 0 ; k < lenDist ; k++){//district
-                    if(inOutMapsQuery(point,boroughs[j].districts[k].mapsPolygon)){
-                        boroughs[j].districts[k].museums.push({
-                            name: data.data[i][9],
-                            location:point,
-                            mapsLocation: new google.maps.Marker({
-                                position:point,
-                                icon: createIcon("src/museum.png"),
-                                title:data.data[i][9]
-                            }),
-                            address: data.data[i][12] + " - " + data.data[i][13],
-                            tel: data.data[i][10],
-                            url: data.data[i][11]
-                        })
-                    }
+function processArt(){ // i'll put this here, but i wont use this dataset
+    let lenData = artData.length;
+    for(let i = 0 ; i < lenData ; i++){
+        let id = -1;
+        let point = parser(artData[i][9]);
+        //quite greedy, but there is no way but check all districts because the data has no district info
+        for(let j = 1 ; j <=5 ; j++){//boro
+            let lenDist = boroughs[j].districts.length;
+            for(let k = 0 ; k < lenDist ; k++){//district
+                if(inOutMapsQuery(point,boroughs[j].districts[k].mapsPolygon)){
+                    boroughs[j].districts[k].art.push({
+                        name: artData[i][8],
+                        location:point,
+                        mapsLocation: new google.maps.Marker({
+                            position:point,
+                            icon: createIcon("src/art.png"),
+                            title:artData[i][9]
+                        }),
+                        address: artData[i][12] + " - " + artData[i][13],
+                        tel: artData[i][10],
+                        url: artData[i][11]
+                    })
                 }
             }
-            if(id == -1)continue;
         }
-    }).done(function(){
-        console.log("Museums loaded...");
-    }).fail(function(){alert("Couldn't load a dataset. please reload the page!");});
+        if(id == -1)continue;
+    }
 }
 
-//this is temporal
-var heatMapData = [];
-var heatmap;
-$.ajax({
-    url: "https://data.cityofnewyork.us/resource/9s4h-37hy.json?$where=latitude IS NOT NULL AND longitude IS NOT NULL",
-    type: "GET",
-    data: {
-      "$limit" : 5000,
-      "$$app_token" : "LsbMCOtwH1ZSzEhm10cXMFk1U"
+var heatmapCrimeShow, pointsHeatCrimes
+function processCrime(){
+    let lenData = crimeData.length;
+    for (let i = 0 ; i<lenData;i++){
+        let id = boroRCAPS[crimeData[i].boro_nm];
+        let point = {lat: parseFloat(crimeData[i].latitude), lng:parseFloat(crimeData[i].longitude)};
+        let pt = new google.maps.LatLng(point.lat,point.lng);
+        pointsHeatCrimes.push(pt);
+        let lenDist = boroughs[id].districts.length;
+        for(let j = 0 ; j <lenDist;j++){
+            if(inOutMapsQuery(point,boroughs[id].districts[j].mapsPolygon)){
+                boroughs[id].districts[j].crimes.push({
+                    description:crimeData[i].ofns_desc,
+                    date:crimeData[i].cmplnt_fr_dt,
+                    location:point,
+                    mapsPoint: pt
+                });
+                break;
+            }
+        }
     }
-}).done(function(data) {
-    crimeData = data;
-    let dtSize = data.length;
-    for(let i = 0 ; i <dtSize;i++){
-        heatMapData.push(new google.maps.LatLng(data[i].latitude,data[i].longitude));
-    }
-    heatmap = new google.maps.visualization.HeatmapLayer({
-        data: heatMapData
+    heatmapCrimeShow = new google.maps.visualization.HeatmapLayer({
+        data:pointsHeatCrimes
     });
-    console.log(data);
-});
+}
+
+function loadData(){
+    $.when(
+        $.getJSON(URLS[0].url,function(data){geoshapesData = data.features;
+        }).fail(function(){alert("Couldn't load geoshapes, please reload the page!");
+        }).done(function(){console.log("Geoshapes loaded");}),
+        $.getJSON(URLS[1].url,function(data){neighborhoodData = data.data;
+        }).fail(function(){alert("Couldn't load neighborhoods, please reload the page!");
+        }).done(function(){console.log("Neighborhoods loaded");}),
+        $.getJSON(URLS[2].url,function(data){housingData = data.data;
+        }).fail(function(){alert("Couldn't load housing, please reload the page!");
+        }).done(function(){console.log("Housing loaded");}),
+        $.getJSON(URLS[3].url,function(data){museumsData = data.data;
+        }).fail(function(){alert("Couldn't load museums, please reload the page!");
+        }).done(function(){console.log("Museums loaded");}),
+        $.ajax({
+            url: "https://data.cityofnewyork.us/resource/9s4h-37hy.json?$where=latitude IS NOT NULL AND longitude IS NOT NULL",
+            type: "GET",
+            data: {
+                "$limit": 5000,
+                "$$app_token": "LsbMCOtwH1ZSzEhm10cXMFk1U"
+            }
+        }).fail(function(data){alert("Couldn't load crimes, please reload the page!");
+    }).done(function(data){crimeData = data;console.log("Crime loaded");})
+    ).then(function(){
+        processGeoshapes();
+        processNeighborhoods();
+        processHousing();
+        processMuseums();
+        //processArt();
+        processCrime();
+
+    })
+}
+
+
 
 /*---------------------------- Google maps interaction scripts ----------------- */
 
@@ -198,11 +249,6 @@ function inOutMapsQuery(point, polygon){ //slower
     let pun = new google.maps.LatLng(point.lat,point.lng);
     return google.maps.geometry.poly.containsLocation(pun,polygon);
 }
-
-function inOutNonMaps(point, polygon){ //both points and polygon are just objects, not maps elements
-
-}
-
 
 function createPolygon(poly){
     let dt = [],pol;
@@ -343,7 +389,8 @@ $(document).ready(function(){
 });
 var MyVar;
 function waitLoad(){
-    loadBasicInfo();
+    //loadBasicInfo();
+    loadData();
 
     myVar = setTimeout(showPage, 100);
 }
@@ -460,7 +507,7 @@ $("#show-data-map").click(function(){
 //----- Map explore tab ----
 var activeBoros = 0; //bitmask
 var activeBrMarkers = 0;
-var heatMapCrime = 0;
+var heatMapCrimeStatus = 0;
 //show boroughs
 $("#show-borough").click(function(){
     activeBoros = 0;
@@ -482,16 +529,14 @@ $("#show-data-explore").click(function(){
 
 //hetmapEnable,diable
 $("#heat-crime").click(function(){
-    if(heatMapCrime == 0){
-        heatmap.setMap(mapTop);
-        heatMapCrime = 1;
+    if(heatMapCrimeStatus == 0){
+        heatmapCrimeShow.setMap(mapTop);
+        heatMapCrimeStatus = 1;
     }else{
-        heatmap.setMap(null);
-        heatMapCrime = 0;
+        heatmapCrimeShow.setMap(null);
+        heatMapCrimeStatus = 0;
     }
 });
-
-
 /*Padding for the navigation bar*/
 $("#navigationMenu").resize(function(){
     $("navBarSpacing").height($("#navigationMenu").height()+10);
