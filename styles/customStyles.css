@@ -1,24 +1,11 @@
 #mapContainer {
     width: 100%;
-    height: 100%;
+    height: 60vh;
 }
 
 /*fill screen css*/
 
-html, body, .customRow {
-    height: 100%;
-}
-
-.customCol {
-    height: 100%;
-}
-
-.customCol-70 {
-    height: 70%;
-}
-
 .configMapSidebar{
-    width: 100%;
     height: 100%;
     overflow-y: auto;
 }
@@ -27,10 +14,25 @@ html, body, .customRow {
     height: 60px;
 }
 
-.sm-icon{
-    height: 2em
+.height-100-wrapper{
+    height: 100vh;
 }
 
+.sm-icon{
+    height: 2em;
+}
+
+
+
+.footer {
+    bottom: 0;
+    width: 100%;
+    background-color: #343a40;
+}
+.footer:hover{
+    width: 100%;
+    background-color: #000000;
+}
 /*Loader, taken from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_loader5*/
 #load-screen {
   position: absolute;

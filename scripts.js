@@ -254,6 +254,9 @@ function loadData(){
         processCrime();
         //for the rank, rankFunction
         rankFunction();
+
+        //apend to tableRanks
+        createtable("#table-ranking-map");
     })
 }
 
@@ -339,6 +342,28 @@ function rankFunction(){//executed when all data is loaded
     districtsRank.sort(function(a,b){return a.overall_score < b.overall_score;});
     for(let i = 0 ; i < lenRank ; i++)districtsRank[i].rank = i+1;
     console.log("Score and ranking done");
+}
+
+function createtable(tableId){ // component to create ranking tables in the id received
+    let tableHeader = '<thead class = "thead-dark"><tr><th scope = "col">#</th><th scope="col">Bor</th><th scope="col">Dic</th><th scope = "col">D.</th><th scope = "col">A.</th><th scope = "col">S.</th><th scope = "col">Ct.</th><th scope = "col">T.</th><th scope = "col">All</th></tr></thead>'
+    $(tableId).append(tableHeader);
+    $(tableId).append('<tbody></tbody>');
+    let len = districtsRank.length;
+    for(let i = 0 ; i <len ; i++){
+        $(tableId).find('tbody').append(
+            "<tr>"
+            +'<th scope="row">'+districtsRank[i].rank +'</th>'
+            +"<th>"+boroughs[districtsRank[i].id_boro].boro_name +"</th>"
+            +"<th>"+boroughs[districtsRank[i].id_boro].districts[districtsRank[i].id_district].number +"</th>"
+            +"<th>"+districtsRank[i].distance_score.toFixed(2) +"</th>"
+            +"<th>"+districtsRank[i].affordability_score.toFixed(2) +"</th>"
+            +"<th>"+districtsRank[i].safety_score.toFixed(2) +"</th>"
+            +"<th>"+districtsRank[i].culture_score.toFixed(2) +"</th>"
+            +"<th>"+districtsRank[i].transportation_score.toFixed(2) +"</th>"
+            +"<th>"+districtsRank[i].overall_score.toFixed(2) +"</th>"
+            +"</tr>"
+        );
+    }
 }
 
 
@@ -709,6 +734,11 @@ $("#navigationMenu").resize(function(){
     $("navBarSpacing").height($("#navigationMenu").height()+10);
 });
 
+/*Icons*/
+$(".iconHouse").attr("src",iconUrls.house);
+$(".iconMuseum").attr("src",iconUrls.museum);
+$(".iconNeighborhood").attr("src",iconUrls.neighborhood);
+$(".iconSubs").attr("src",iconUrls.subway);
 /*Map interactions*/
 
 //Detect tabs change in the tabs of the map and reset form
@@ -841,3 +871,6 @@ $("#heat-crime").click(function(){
         heatMapCrimeStatus = 0;
     }
 });
+
+
+//-----Map ranking tab -----
