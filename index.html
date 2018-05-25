@@ -25,19 +25,22 @@
 							<a class="nav-link" href="#mapView">Map</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#comparationView">Comparison</a>
+							<a class="nav-link" href="#dashboard">Dashboard</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#downloadsView">Downloads</a>
+							<a class="nav-link" href="#compare">Compare</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#downloads">Downloads</a>
 						</li>
 					</ul>
 				</div>
 			</nav>
 		</header>
-
+		<div id ="mapView"></div>
 		<div class = "paddingNavBar" id = "navBarSpacing"></div>
 
-		<div class="row customRow" id = "mapView">
+		<div class="row customRow">
 			<div class="col-sm-4 customCol">
 				<div class="card configMapSidebar">
 					<div class="card-header">
@@ -51,8 +54,8 @@
 								href = "#explore-tab">Explore</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" id = "map-selected-tab" data-toggle = "tab"
-								href = "#selected-tab">Selected districts</a>
+								<a class="nav-link" id = "map-ranking" data-toggle = "tab"
+								href = "#ranking-rab">Ranking</a>
 							</li>
 						</ul>
 					</div>
@@ -95,7 +98,7 @@
 											</div>
 										</div>
 										<div class ="col-sm-12 mt-1">
-											<button class = "btn btn-primary btn-lg btn-block" id = "show-data-map">Show/Hide Markers</button>
+											<button class = "btn btn-dark btn-lg btn-block" id = "show-data-map">Show/Hide Markers</button>
 										</div>
 									</div>
 								</div>
@@ -141,7 +144,7 @@
 												</div>
 											</div>
 										</div>
-										<button class = "btn btn-primary btn-lg btn-block mt-1" id = "show-borough">Show/Hide Borders</button>
+										<button class = "btn btn-dark btn-lg btn-block mt-1" id = "show-borough">Show/Hide Borders</button>
 									</div>
 									<hr />
 									<p class="lead">
@@ -163,19 +166,43 @@
 											</div>
 										</div>
 									</div>
-									<button class = "btn btn-primary btn-lg btn-block mt-1" id = "show-data-explore">Show/Hide Borders</button>
+									<button class = "btn btn-dark btn-lg btn-block mt-1" id = "show-data-explore">Show/Hide Borders</button>
 									<hr />
 									<p class = "lead">
 										Heatmaps!
 									</p>
 									<div class = "form-row">
-										<button class = "btn btn-primary btn-lg btn-block" id = "heat-crime">Show/Hide Crime</button>
-										<button class = "btn btn-primary btn-lg btn-block" id = "heat-contamination">Show/Hide Contamination</button>
+										<button class = "btn btn-dark btn-lg btn-block" id = "heat-crime">Show/Hide Crime</button>
 									</div>
 								</div>
 							</div>
-							<div class = "tab-pane show fade" id = "selected-tab">
-								In development
+							<div class = "tab-pane show fade" id = "ranking-rab">
+								<div class = "jumbotron">
+									<h4 class = "display-4">Rankings</h4>
+									<p class = "lead">
+										Rankings of districts according to datasets!
+									</p>
+									<div class="table-responsive">
+										<table class = "table" id = "table-ranking-map">
+											<thead class = "thead-dark">
+												<tr>
+													<th scope = "col">#</th>
+													<th scope="col">Borough</th>
+													<th scope="col">District</th>
+													<th scope = "col">Dist.</th>
+													<th scope = "col">Affordable.</th>
+													<th scope = "col">Safe.</th>
+													<th scope = "col">Culture.</th>
+													<th scope = "col">Transport.</th>
+													<th scope = "col">Overall Score</th>
+												</tr>
+											</thead>
+											<tbody>
+												
+											</tbody>
+										</table>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -211,15 +238,26 @@
 				</div>
 			</div>
 		</div>
-
 		<hr/>
-
-		<div class="row customRow" id = "comparationView">
+		<div class="row" id = "dashboard">
+			<div class ="col-sm-12">
+				<div class ="jumbotron">
+					<h4 class = "display-4">Dashboard</h4>
+					<p class = "lead">
+						Information about housing!
+					</p>
+				</div>
+			</div>
 		</div>
 
 		<hr/>
 
-		<div class="row customRow" id = "downloadsView">
+		<div class="row customRow" id = "compare">
+		</div>
+
+		<hr/>
+
+		<div class="row customRow" id = "downloads">
 		</div>
 	</div>
 	<!--javascript-->

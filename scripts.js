@@ -6,23 +6,33 @@ var URLS = [
     {name: "neighborhood_names", url:"https://data.cityofnewyork.us/api/views/xyye-rtrs/rows.json?accessType=DOWNLOAD"},
     {name: "housing", url:"https://data.cityofnewyork.us/api/views/hg8x-zxpr/rows.json?accessType=DOWNLOAD"},
     {name: "museums", url:"https://data.cityofnewyork.us/api/views/fn6f-htvy/rows.json?accessType=DOWNLOAD"},
-    {name: "art", url:"https://data.cityofnewyork.us/api/views/43hw-uvdj/rows.json?accessType=DOWNLOAD"},
-    {name: "crime", url:"https://data.cityofnewyork.us/api/views/qgea-i56i/rows.json?accessType=DOWNLOAD"}
+    {name: "subway", url:"https://data.ny.gov/api/views/i9wp-a4ja/rows.json?accessType=DOWNLOAD"},// Allowed by: https://catalog.data.gov/dataset/nyc-transit-subway-entrance-and-exit-data
+    {name: "crime", url:"https://data.cityofnewyork.us/api/views/qgea-i56i/rows.json?accessType=DOWNLOAD"},
 ];
 
 var boroR = {"Manhattan":"1","Bronx":"2","Brooklyn":"3","Queens":"4","Staten Island":"5"};
 var boroRCAPS = {"MANHATTAN":"1","BRONX":"2","BROOKLYN":"3","QUEENS":"4","STATEN ISLAND":"5"};
 
+var iconUrls = {
+    house:"https://image.flaticon.com/icons/svg/608/608671.svg",
+    museum:"https://image.flaticon.com/icons/svg/252/252032.svg",
+    neighborhood:"https://image.flaticon.com/icons/svg/459/459273.svg",
+    uni:"https://image.flaticon.com/icons/svg/186/186335.svg",
+    subway:"https://image.flaticon.com/icons/svg/744/744537.svg"
+}
+
 var boroughs = { // in this one we build the "dataframe"
-    "1": {boro_name:"Manhattan",color: "#06e908",districts:[]},//1
-    "2": {boro_name:"Bronx",color: "#134bdb",districts:[]},//2
-    "3": {boro_name:"Brooklyn",color:"#d7480b",districts:[]},//3
-    "4": {boro_name:"Queens",color: "#c211ee",districts:[]},//4
-    "5": {boro_name:"Staten Island",color: "#dbd318",districts:[]}//5
+    "1": {boro_name:"Manhattan",color: "#1c00ff",districts:[]},//1
+    "2": {boro_name:"Bronx",color: "#fc9c0e",districts:[]},//2
+    "3": {boro_name:"Brooklyn",color:"#00ff0f",districts:[]},//3
+    "4": {boro_name:"Queens",color: "#ff0000",districts:[]},//4
+    "5": {boro_name:"Staten Island",color: "#fff500",districts:[]}//5
 };
 
+var nonHabitable = 20;//all district with bumer over 50 are not habitable.
+var nonHabitableColor = "#000000";
 //new way to handle data, it is better and more organized
-var geoshapesData,neighborhoodData,housingData,museumsData,artData,crimeData;
+var geoshapesData,neighborhoodData,housingData,museumsData,crimeData,subwayData;
 
 function processGeoshapes(){
     let len = geoshapesData.length;
@@ -30,27 +40,32 @@ function processGeoshapes(){
         let boroCD = geoshapesData[i].properties.BoroCD/100.0>>0;
         let boroID = geoshapesData[i].properties.BoroCD - (boroCD*100);
         let mPol = createPolygon(geoshapesData[i].geometry)
+        let isHabitable = (boroID<nonHabitable)
         mPol.setOptions({
-            fillColor:boroughs[boroCD].color,
+            fillColor: (isHabitable)?boroughs[boroCD].color : nonHabitableColor,
             strokeColor:"#5a5e4b",
             strokeOpacity:0.5,
             strokeWeight: 2
         });
+        let center = mPol.my_getBounds().getCenter();
          //Template of values for each boro
         boroughs[boroCD].districts.push({
+            boro_id:boroCD,
             number:boroID,
             poly: geoshapesData[i].geometry,
             mapsPolygon: mPol,//polygon
-            borough_center: mPol.my_getBounds().getCenter(),
+            borough_center: center,
             neighborhoods: [],
             housing: [],
             museums: [],
-            art: [],
             crimes: [],
-            number_crimes: 0,
+            subways:[],
             number_units: 0,
-            distance: 0,
-            number_museums_art: 0
+            number_museums: 0,
+            number_crimes: 0,
+            number_subs:0,
+            distance: latLngDistances(coordNYU,{lat:center.lat(), lng:center.lng()}),
+            habitable: isHabitable
         });
     }
 }
@@ -62,13 +77,13 @@ function processNeighborhoods(){
         let point = parser(neighborhoodData[i][9]);
         let lenDist = boroughs[id].districts.length;
         for(let j = 0 ; j < lenDist ; j++){
-            if(inOutMapsQuery(point,boroughs[id].districts[j].mapsPolygon)){
+            if(inOutMapsD3(point,boroughs[id].districts[j].poly)){
                 boroughs[id].districts[j].neighborhoods.push({
                     name:neighborhoodData[i][10],
                     location:point,
                     mapsLocation: new google.maps.Marker({
                         position:point,
-                        icon:createIcon("src/neighborhood.png"),
+                        icon:createIcon(iconUrls.neighborhood),
                         title: neighborhoodData[i][10]
                     })
                 });
@@ -86,13 +101,13 @@ function processHousing(){
         let point = {lat: parseFloat(housingData[i][23]) , lng:parseFloat(housingData[i][24])};
         let lenDist = boroughs[id].districts.length;
         for(let j = 0 ; j < lenDist ; j++){
-            if(inOutMapsQuery(point,boroughs[id].districts[j].mapsPolygon)){
+            if(inOutMapsD3(point,boroughs[id].districts[j].poly)){
                 boroughs[id].districts[j].housing.push({
                     name:housingData[i][9],
                     location:point,
                     mapsLocation: new google.maps.Marker({
                         position:point,
-                        icon: createIcon("src/house.png"),
+                        icon: createIcon(iconUrls.house),
                         title: housingData[i][9]
                     })
                 });
@@ -112,19 +127,21 @@ function processMuseums(){
         for(let j = 1 ; j <=5 ; j++){//boro
             let lenDist = boroughs[j].districts.length;
             for(let k = 0 ; k < lenDist ; k++){//district
-                if(inOutMapsQuery(point,boroughs[j].districts[k].mapsPolygon)){
+                if(inOutMapsD3(point,boroughs[j].districts[k].poly)){
                     boroughs[j].districts[k].museums.push({
                         name: museumsData[i][9],
                         location:point,
                         mapsLocation: new google.maps.Marker({
                             position:point,
-                            icon: createIcon("src/museum.png"),
+                            icon: createIcon(iconUrls.museum),
                             title:museumsData[i][9]
                         }),
                         address: museumsData[i][12] + " - " + museumsData[i][13],
                         tel: museumsData[i][10],
                         url: museumsData[i][11]
-                    })
+                    });
+                    boroughs[j].districts[k].number_museums++;
+                    break;
                 }
             }
         }
@@ -132,36 +149,34 @@ function processMuseums(){
     }
 }
 
-function processArt(){ // i'll put this here, but i wont use this dataset
-    let lenData = artData.length;
-    for(let i = 0 ; i < lenData ; i++){
-        let id = -1;
-        let point = parser(artData[i][9]);
-        //quite greedy, but there is no way but check all districts because the data has no district info
-        for(let j = 1 ; j <=5 ; j++){//boro
+function processSubway(){
+    let lenData = subwayData.length;
+    for(let i = 0 ; i<lenData; i++){
+        let point = {lat: parseFloat(subwayData[i][36]), lng: parseFloat(subwayData[i][37])};
+        for(let j = 1 ; j<=5 ; j++){
             let lenDist = boroughs[j].districts.length;
-            for(let k = 0 ; k < lenDist ; k++){//district
-                if(inOutMapsQuery(point,boroughs[j].districts[k].mapsPolygon)){
-                    boroughs[j].districts[k].art.push({
-                        name: artData[i][8],
+            for(let k = 0 ; k<lenDist;k++){
+                if(inOutMapsD3(point,boroughs[j].districts[k].poly)){
+                    boroughs[j].districts[k].subways.push({
+                        name:subwayData[i][10],
                         location:point,
                         mapsLocation: new google.maps.Marker({
                             position:point,
-                            icon: createIcon("src/art.png"),
-                            title:artData[i][9]
+                            icon: createIcon(iconUrls.subway),
+                            title: subwayData[i][10] + " station - line " + subwayData[i][9] + " - " +subwayData[i][35]
                         }),
-                        address: artData[i][12] + " - " + artData[i][13],
-                        tel: artData[i][10],
-                        url: artData[i][11]
+                        linie: subwayData[i][9],
+                        corner:subwayData[i][35],
                     })
+                    boroughs[j].districts[k].number_subs++;
+                    break;
                 }
             }
         }
-        if(id == -1)continue;
     }
 }
 
-var heatmapCrimeShow, pointsHeatCrimes
+var heatmapCrimeShow, pointsHeatCrimes = [];
 function processCrime(){
     let lenData = crimeData.length;
     for (let i = 0 ; i<lenData;i++){
@@ -171,19 +186,36 @@ function processCrime(){
         pointsHeatCrimes.push(pt);
         let lenDist = boroughs[id].districts.length;
         for(let j = 0 ; j <lenDist;j++){
-            if(inOutMapsQuery(point,boroughs[id].districts[j].mapsPolygon)){
+            if(inOutMapsD3(point,boroughs[id].districts[j].poly)){
                 boroughs[id].districts[j].crimes.push({
                     description:crimeData[i].ofns_desc,
                     date:crimeData[i].cmplnt_fr_dt,
                     location:point,
                     mapsPoint: pt
                 });
+                boroughs[id].districts[j].number_crimes++;
                 break;
             }
         }
     }
     heatmapCrimeShow = new google.maps.visualization.HeatmapLayer({
-        data:pointsHeatCrimes
+        data:pointsHeatCrimes,
+        gradient:[
+            'rgba(0, 255, 255, 0)',
+            'rgba(0, 255, 255, 1)',
+            'rgba(0, 191, 255, 1)',
+            'rgba(0, 127, 255, 1)',
+            'rgba(0, 63, 255, 1)',
+            'rgba(0, 0, 255, 1)',
+            'rgba(0, 0, 223, 1)',
+            'rgba(0, 0, 191, 1)',
+            'rgba(0, 0, 159, 1)',
+            'rgba(0, 0, 127, 1)',
+            'rgba(63, 0, 91, 1)',
+            'rgba(127, 0, 63, 1)',
+            'rgba(191, 0, 31, 1)',
+            'rgba(255, 0, 0, 1)'
+       ]
     });
 }
 
@@ -209,21 +241,268 @@ function loadData(){
                 "$$app_token": "LsbMCOtwH1ZSzEhm10cXMFk1U"
             }
         }).fail(function(data){alert("Couldn't load crimes, please reload the page!");
-    }).done(function(data){crimeData = data;console.log("Crime loaded");})
+    }).done(function(data){crimeData = data;console.log("Crime loaded");}),
+    $.getJSON(URLS[4].url,function(data){subwayData=data.data;
+    }).fail(function(){alert("Couldn't load subway, please reload the page!");
+}).done(function(){console.log("Subway Loaded");})
     ).then(function(){
         processGeoshapes();
         processNeighborhoods();
         processHousing();
         processMuseums();
-        //processArt();
+        processSubway();
         processCrime();
-
+        //for the rank, rankFunction
+        rankFunction();
     })
 }
 
+/*----------------------------------------Scripts Ranking--------------------------------*/
+
+/*
+>Variables considered in the ranking:
+>>distance (distance)
+>>number_units (affordability)
+>>number_crimes (safety)
+>>number_museums (culture)
+>>number_subs (transportation)
+*/
+
+//structure of the data:
+//{id_boro, id_district, rank, distance_score, affordability_score, safety_score, culture_score, transportation_score, overall_score}
+//note, this id_district refers to the position it is stored in the boroughs dataframe
+var districtsRank = [];
+
+//data standarization, read http://www.statisticshowto.com/normalized/
+
+Math.artihmeticMean = function(data){
+    let sum = 0.0;
+    let lenData = data.length;
+    for(let i = 0 ; i <lenData;i++){
+        sum+=data[i];
+    }
+    return sum/lenData;
+}
+Math.variance = function(data,mean){
+    let sum = 0.0;
+    let lenData = data.length;
+    for(let i = 0 ; i <lenData;i++){
+        sum = (data[i]-mean)*(data[i]-mean);
+    }
+    return (1/(lenData-1))*sum;
+}
+
+var zscore = function(data){
+    let mean = Math.artihmeticMean(data);
+    let desvest = Math.sqrt(Math.variance(data,mean));
+    let lenData = data.length;
+    for(let i = 0 ; i<lenData;i++){
+        data[i] = (data[i]-mean)/desvest;//overwritte
+    }
+    return data;
+}
 
 
-/*---------------------------- Google maps interaction scripts ----------------- */
+function rankFunction(){//executed when all data is loaded
+    for(let i = 1;i<=5;i++){
+        let lenDist = boroughs[i].districts.length;
+        for (let j = 0 ; j<lenDist;j++){
+            if(!boroughs[i].districts[j].habitable)continue;//discard non habitable districts;
+            districtsRank.push({
+                rank:0,//not yet ranked
+                id_boro:i,
+                id_district:j,
+                distance_score:boroughs[i].districts[j].distance,
+                affordability_score:boroughs[i].districts[j].number_units,
+                safety_score:boroughs[i].districts[j].number_crimes,
+                culture_score:boroughs[i].districts[j].number_museums,
+                transportation_score:boroughs[i].districts[j].number_subs,
+                overall_score:0 //not yet calculated
+            });
+        }
+    }
+    let zdistance = zscore(districtsRank.map(x=>x.distance_score)),
+        zaffordable = zscore(districtsRank.map(x=>x.affordability_score)),
+        zsafety = zscore(districtsRank.map(x=>x.safety_score)),
+        zculture = zscore(districtsRank.map(x=>x.distance_score)),
+        ztransport = zscore(districtsRank.map(x=>x.transportation_score));
+
+    let lenRank = districtsRank.length;
+    for(let i = 0 ;i < lenRank ; i++){
+        districtsRank[i].distance_score = zdistance[i];
+        districtsRank[i].affordability_score = zaffordable[i];
+        districtsRank[i].safety_score = zsafety[i];
+        districtsRank[i].culture_score = zculture[i];
+        districtsRank[i].transportation_score = ztransport[i];
+        districtsRank[i].overall_score = (-zdistance[i]) + zaffordable[i] + zsafety[i] + zculture[i] + ztransport[i];
+    }
+    districtsRank.sort(function(a,b){return a.overall_score < b.overall_score;});
+    for(let i = 0 ; i < lenRank ; i++)districtsRank[i].rank = i+1;
+    console.log("Score and ranking done");
+}
+
+
+/*---------------------------- Google maps scripts and other functions ----------------- */
+var mapStyle = [
+  {
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#f5f5f5"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.icon",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#616161"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#f5f5f5"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#bdbdbd"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#eeeeee"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#757575"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#e5e5e5"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9e9e9e"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#ffffff"
+      }
+    ]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#757575"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dadada"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#616161"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9e9e9e"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.line",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#e5e5e5"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#eeeeee"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#c9c9c9"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9e9e9e"
+      }
+    ]
+  }
+]
 
 var mapTop;
 var coordNYU = {lat: 40.729218, lng: -73.996492};
@@ -248,6 +527,31 @@ function latLongMaps(dat){
 function inOutMapsQuery(point, polygon){ //slower
     let pun = new google.maps.LatLng(point.lat,point.lng);
     return google.maps.geometry.poly.containsLocation(pun,polygon);
+}
+
+function inOutMapsD3(point, polygon){
+    if(polygon.type == "Polygon"){
+        return d3.polygonContains(polygon.coordinates[0],[point.lng,point.lat]);
+    }else{
+        let len = polygon.coordinates.length;
+        for (let i = 0 ; i < len;i++){
+            if(d3.polygonContains(polygon.coordinates[i][0],[point.lng,point.lat])) return true;
+        }
+    }
+    return false;
+}
+
+
+Math.radians = function(degrees){
+    return degrees * Math.PI / 180;
+}
+var Rad = 6371e3; // earth radius
+function latLngDistances(pointA,pointB){
+    //based on: https://www.movable-type.co.uk/scripts/latlong.html
+    let d1 = Math.radians(pointA.lat);
+    let d2 = Math.radians(pointB.lat);
+    let lambda = Math.radians(pointB.lng-pointA.lng);
+    return Math.acos( Math.sin(d1)*Math.sin(d2) + Math.cos(d1)*Math.cos(d2) * Math.cos(lambda) ) * Rad;
 }
 
 function createPolygon(poly){
@@ -298,11 +602,12 @@ function onGoogleMapResponse(){
         },
         fullscreenControl: false,
         mapTypeControl: false,
-        streetViewControl: false
+        streetViewControl: false,
+        styles:mapStyle
     });
     var fixedMarker = new google.maps.Marker({
         position: coordNYU,
-        icon: createIcon("src/uni.png"),
+        icon: createIcon(iconUrls.uni),
         map: mapTop,
         title: 'NYU!',
     });
@@ -391,8 +696,7 @@ var MyVar;
 function waitLoad(){
     //loadBasicInfo();
     loadData();
-
-    myVar = setTimeout(showPage, 100);
+    myVar = setTimeout(showPage, 1000);
 }
 
 function showPage() {
@@ -400,12 +704,17 @@ function showPage() {
   document.getElementById("containter-whole").style.display = "block";
 }
 
+/*Padding for the navigation bar*/
+$("#navigationMenu").resize(function(){
+    $("navBarSpacing").height($("#navigationMenu").height()+10);
+});
+
 /*Map interactions*/
 
 //Detect tabs change in the tabs of the map and reset form
 var currentMapTab = 0;
 
-function resetForm(){
+function resetFormMap(){
     if(currentMapTab == 0){
         if(boroughChosen != 0 || districtChosen != 0){
             let notClick = true;
@@ -416,25 +725,20 @@ function resetForm(){
             $("#boro-map").trigger("change");
         }
     }else if(currentMapTab == 1){
-
+        $("input:checkbox[name = borough-pick]").each(function(){this.checked=0;});
+        $("input:checkbox[name = borough-pick-2]").each(function(){this.checked=0;});
+        $("#show-borough").trigger("click");
+        $("#show-data-explore").trigger("click");
+        if(heatMapCrimeStatus==1)$("#heat-crime").trigger("click");
     }else{
 
     }
 }
 
-$("a[href='#find-tab']").on('shown.bs.tab', function(e) {
-    resetForm();
-    currentMapTab = 0;
-});
-
-$("a[href='#explore-tab']").on('shown.bs.tab', function(e) {
-    resetForm();
-    currentMapTab = 1;
-});
-$("a[href='#selected-tab']").on('shown.bs.tab', function(e) {
-    resetForm();
-    currentMapTab = 2;
-});
+//interaction map tabs
+$("a[href='#find-tab']").on('shown.bs.tab', function(e) {resetFormMap();currentMapTab = 0;});
+$("a[href='#explore-tab']").on('shown.bs.tab', function(e) {resetFormMap();currentMapTab = 1;});
+$("a[href='#ranking-rab']").on('shown.bs.tab', function(e) {resetFormMap();currentMapTab = 2;});
 
 
 //----- Map find tab ----
@@ -527,7 +831,7 @@ $("#show-data-explore").click(function(){
     showHideBorosAndMarkers(activeBrMarkers,activeBoros);
 });
 
-//hetmapEnable,diable
+//hetmapEnable,disable
 $("#heat-crime").click(function(){
     if(heatMapCrimeStatus == 0){
         heatmapCrimeShow.setMap(mapTop);
@@ -536,8 +840,4 @@ $("#heat-crime").click(function(){
         heatmapCrimeShow.setMap(null);
         heatMapCrimeStatus = 0;
     }
-});
-/*Padding for the navigation bar*/
-$("#navigationMenu").resize(function(){
-    $("navBarSpacing").height($("#navigationMenu").height()+10);
 });
