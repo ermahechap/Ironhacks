@@ -40,7 +40,7 @@
 		<div id ="mapView"></div>
 		<div class = "paddingNavBar" id = "navBarSpacing"></div>
 		<div class="row ">
-				<div class="col-sm-4 height-100-wrapper">
+				<div class="col-lg-4 height-100-wrapper">
 					<div class="card configMapSidebar">
 						<div class="card-header">
 							<ul class="nav nav-tabs card-header-tabs" role = "tablist">
@@ -77,12 +77,12 @@
 											</select>
 										</div>
 										<hr />
-										<h4 class = "display-4">Show More</h4>
+										<h4>Show More</h4>
 										<p class = "lead">
 											Pick the data you want to see in the neighborhood chosen!
 										</p>
 										<div class = "form-row">
-											<div class  = "col-sm-12">
+											<div class  = "col-lg-12">
 												<div class = "form-check">
 													<input class = "form-check-input" type="checkbox" value="1" id = "housing-enable" name = "data-pick"/>
 													<label class = "form-check-label" for ="housing-enable"><img class = "sm-icon iconHouse"/>Housing</label>
@@ -95,8 +95,12 @@
 													<input class = "form-check-input" type="checkbox" value="4" id = "museum-enable" name = "data-pick"/>
 													<label class = "form-check-label" for ="museum-enable"><img class = "sm-icon iconMuseum"/>Museums</label>
 												</div>
+												<div class = "form-check">
+													<input class = "form-check-input" type="checkbox" value="8" id = "subs-enable" name = "data-pick"/>
+													<label class = "form-check-label" for ="subs-enable"><img class = "sm-icon iconSubs"/>Subways</label>
+												</div>
 											</div>
-											<div class ="col-sm-12 mt-1">
+											<div class ="col-lg-12 mt-1">
 												<button class = "btn btn-dark btn-lg btn-block" id = "show-data-map">Show/Hide Markers</button>
 											</div>
 										</div>
@@ -114,9 +118,9 @@
 										</p>
 										<div class = "form-group">
 											<div class = "row">
-												<div class = "col-sm-12">
+												<div class = "col-lg-12">
 													<div class  = "row">
-														<div class = "col-sm-6">
+														<div class = "col-lg-6">
 															<div class = "form-check">
 																<input class = "form-check-input" type="checkbox" value="1" id = "manhattan-enable" name = "borough-pick"/>
 																<label class = "form-check-label" for ="manhattan-enable">Manhattan</label>
@@ -130,7 +134,7 @@
 																<label class = "form-check-label" for ="brooklyn-enable">Brooklyn</label>
 															</div>
 														</div>
-														<div class ="col-sm-6">
+														<div class ="col-lg-6">
 															<div class = "form-check">
 																<input class = "form-check-input" type="checkbox" value="8" id = "queens-enable" name = "borough-pick"/>
 																<label class = "form-check-label" for ="queens-enable">Queens</label>
@@ -150,7 +154,7 @@
 											Markers
 										</p>
 										<div class = "form-row">
-											<div class = "form-group col-sm-12">
+											<div class = "form-group col-lg-12">
 												<div class = "form-check">
 													<input class = "form-check-input" type="checkbox" value="1" id = "housing-enable-2" name = "borough-pick-2"/>
 													<label class = "form-check-label" for ="housing-enable-2"><img class = "sm-icon iconHouse"/>Housing</label>
@@ -165,7 +169,7 @@
 												</div>
 											</div>
 										</div>
-										<button class = "btn btn-dark btn-lg btn-block mt-1" id = "show-data-explore">Show/Hide Borders</button>
+										<button class = "btn btn-dark btn-lg btn-block mt-1" id = "show-data-explore">Show/Hide Markers</button>
 										<hr />
 										<p class = "lead">
 											Heatmaps!
@@ -179,21 +183,47 @@
 									<div class = "jumbotron">
 										<h4 class = "display-4">Rankings</h4>
 										<p class = "lead">
-											Rankings of districts according to datasets!
+											Ranking of districts, pick one to visualize information!
 										</p>
-										<div class="table-responsive table-hover" style="height:40vh;">
+										<div class="table-responsive table-hover" style="height:30vh;">
 											<table class = "table" id = "table-ranking-map"></table>
 										</div>
-										<p>*Bor-Borough, Dic-District, D-Distance, A-Affordability, S-Safety, C-Culture, T-Transit,Tot-Total Score</p>
+										<hr />
+										<p class = "lead">
+											Markers
+										</p>
+										<div class = "form-row">
+											<div class  = "col-lg-12">
+												<div class = "form-check">
+													<input class = "form-check-input" type="checkbox" value="1" id = "housing-enable" name = "data-pick-rank"/>
+													<label class = "form-check-label" for ="housing-enable"><img class = "sm-icon iconHouse"/>Housing</label>
+												</div>
+												<div class = "form-check">
+													<input class = "form-check-input" type="checkbox" value="2" id = "neighborhood-enable" name = "data-pick-rank"/>
+													<label class = "form-check-label" for ="neighborhood-enable"><img class = "sm-icon iconNeighborhood"/>Neighborhoods</label>
+												</div>
+												<div class = "form-check">
+													<input class = "form-check-input" type="checkbox" value="4" id = "museum-enable" name = "data-pick-rank"/>
+													<label class = "form-check-label" for ="museum-enable"><img class = "sm-icon iconMuseum"/>Museums</label>
+												</div>
+												<div class = "form-check">
+													<input class = "form-check-input" type="checkbox" value="8" id = "subs-enable" name = "data-pick-rank"/>
+													<label class = "form-check-label" for ="subs-enable"><img class = "sm-icon iconSubs"/>Subways</label>
+												</div>
+											</div>
+											<div class ="col-lg-12 mt-1">
+												<button class = "btn btn-dark btn-lg btn-block" id = "show-data-map-rank">Show/Hide Markers</button>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-				<div class="col-sm-8">
+				<div class="col-lg-8">
 					<div class="row ">
-						<div class="col-sm-12">
+						<div class="col-lg-12">
 							<div class="rounded" id="mapContainer"></div>
 							<div class="card-group" id="bottomMap">
 								<div class="card">
@@ -226,12 +256,13 @@
 		<hr/>
 
 		<div class="row" id = "dashboard">
-			<div class ="col-sm-12">
+			<div class ="col-lg-12">
 				<div class ="jumbotron">
 					<h4 class = "display-4">Dashboard</h4>
 					<p class = "lead">
 						Information about housing!
 					</p>
+					<p>*Bor-Borough, Dic-District, D-Distance, A-Affordability, S-Safety, C-Culture, T-Transit,Tot-Total Score</p>
 				</div>
 			</div>
 		</div>
@@ -249,10 +280,10 @@
 		<footer class = "footer">
 			<div class = "containter-fluid">
 				<div class="row p-3">
-					<div class = "col-sm-4">
+					<div class = "col-lg-4">
 						<span class = "text-muted">NYU - Stern School of Business Rooms by Edwin Mahecha</span>
 					</div>
-					<div class = "col-sm-8">
+					<div class = "col-lg-8">
 						<span class = "text-muted">Icons by:</span>
 						<br>
 						<span class = "text-muted">

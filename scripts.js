@@ -256,7 +256,12 @@ function loadData(){
         rankFunction();
 
         //apend to tableRanks
-        createtable("#table-ranking-map");
+        createtable("#table-ranking-map",263);//263 is a bitmask, check function for details
+        mapRankTableClick(); // for the click event
+        //create selector for tab1 of map
+        for(var i = 1 ; i<=5;i++){
+            $('#boro-map').append('<option value="' + i + '">' + boroughs[i].boro_name+ '</option>');
+        }
     })
 }
 
@@ -314,7 +319,7 @@ function rankFunction(){//executed when all data is loaded
             districtsRank.push({
                 rank:0,//not yet ranked
                 id_boro:i,
-                id_district:j,
+                id_district:j+1,
                 distance_score:boroughs[i].districts[j].distance,
                 affordability_score:boroughs[i].districts[j].number_units,
                 safety_score:boroughs[i].districts[j].number_crimes,
@@ -339,28 +344,41 @@ function rankFunction(){//executed when all data is loaded
         districtsRank[i].transportation_score = ztransport[i];
         districtsRank[i].overall_score = (-zdistance[i]) + zaffordable[i] + zsafety[i] + zculture[i] + ztransport[i];
     }
-    districtsRank.sort(function(a,b){return a.overall_score < b.overall_score;});
+    districtsRank.sort(function(a,b){return b.overall_score - a.overall_score;});
     for(let i = 0 ; i < lenRank ; i++)districtsRank[i].rank = i+1;
     console.log("Score and ranking done");
 }
 
-function createtable(tableId){ // component to create ranking tables in the id received
-    let tableHeader = '<thead class = "thead-dark"><tr><th scope = "col">#</th><th scope="col">Bor</th><th scope="col">Dic</th><th scope = "col">D.</th><th scope = "col">A.</th><th scope = "col">S.</th><th scope = "col">Ct.</th><th scope = "col">T.</th><th scope = "col">All</th></tr></thead>'
+//rowMask allows me to pick the columns I want.
+//rank - 1 , borough - 2, District - 4, Distance - 8, Affortability - 16, Safety - 32, Culture - 64, Transit -128, TotalScore-256
+function createtable(tableId,rowMask){ // component to create ranking tables in the id received
+    let tableHeader = '<thead class = "thead-dark"><tr>'
+        +((rowMask&1)?'<th scope = "col">#</th>':'')
+        +((rowMask&2)?'<th scope="col">Bor</th>':'')
+        +((rowMask&4)?'<th scope="col">Dic</th>':'')
+        +((rowMask&8)?'<th scope = "col">D.</th>':'')
+        +((rowMask&16)?'<th scope = "col">A.</th>':'')
+        +((rowMask&32)?'<th scope = "col">S.</th>':'')
+        +((rowMask&64)?'<th scope = "col">C.</th>':'')
+        +((rowMask&128)?'<th scope = "col">T.</th>':'')
+        +((rowMask&256)?'<th scope = "col">TScore</th>':'')
+        +'</tr></thead>';
+
     $(tableId).append(tableHeader);
     $(tableId).append('<tbody></tbody>');
     let len = districtsRank.length;
     for(let i = 0 ; i <len ; i++){
         $(tableId).find('tbody').append(
-            "<tr>"
-            +'<th scope="row">'+districtsRank[i].rank +'</th>'
-            +"<th>"+boroughs[districtsRank[i].id_boro].boro_name +"</th>"
-            +"<th>"+boroughs[districtsRank[i].id_boro].districts[districtsRank[i].id_district].number +"</th>"
-            +"<th>"+districtsRank[i].distance_score.toFixed(2) +"</th>"
-            +"<th>"+districtsRank[i].affordability_score.toFixed(2) +"</th>"
-            +"<th>"+districtsRank[i].safety_score.toFixed(2) +"</th>"
-            +"<th>"+districtsRank[i].culture_score.toFixed(2) +"</th>"
-            +"<th>"+districtsRank[i].transportation_score.toFixed(2) +"</th>"
-            +"<th>"+districtsRank[i].overall_score.toFixed(2) +"</th>"
+            '<tr class = "rowCursor">'
+            +((rowMask&1)?('<th scope="row">'+districtsRank[i].rank +'</th>'):'')
+            +((rowMask&2)?("<td>"+boroughs[districtsRank[i].id_boro].boro_name +"</td>"):'')
+            +((rowMask&4)?("<td>"+districtsRank[i].id_district +"</td>"):'')
+            +((rowMask&8)?("<td>"+districtsRank[i].distance_score.toFixed(2) +"</td>"):'')
+            +((rowMask&16)?("<td>"+districtsRank[i].affordability_score.toFixed(2) +"</td>"):'')
+            +((rowMask&32)?("<td>"+districtsRank[i].safety_score.toFixed(2) +"</td>"):'')
+            +((rowMask&64)?("<td>"+districtsRank[i].culture_score.toFixed(2) +"</td>"):'')
+            +((rowMask&128)?("<td>"+districtsRank[i].transportation_score.toFixed(2) +"</td>"):'')
+            +((rowMask&256)?("<td>"+districtsRank[i].overall_score.toFixed(2) +"</td>"):'')
             +"</tr>"
         );
     }
@@ -535,8 +553,8 @@ var coordNYU = {lat: 40.729218, lng: -73.996492};
 function createIcon(ico_url){
     return{
         url: ico_url,
-        scaledSize: new google.maps.Size(40, 40), //scale
         origin: new google.maps.Point(0,0),
+        scaledSize: new google.maps.Size(40, 40), //scale
         anchor: new google.maps.Point(0, 0)
     };
 }
@@ -691,6 +709,11 @@ function showHideMarkers(id_boro,id_district,active){
         for(let i = 0 ; i < len ; i++){boroughs[id_boro].districts[id_district].museums[i].mapsLocation.setMap(mapTop);}
     else
         for(let i = 0 ; i < len ; i++){boroughs[id_boro].districts[id_district].museums[i].mapsLocation.setMap(null);}
+    len = boroughs[id_boro].districts[id_district].subways.length
+    if(active&8)
+        for(let i = 0 ; i < len ; i++){boroughs[id_boro].districts[id_district].subways[i].mapsLocation.setMap(mapTop);}
+    else
+        for(let i = 0 ; i < len ; i++){boroughs[id_boro].districts[id_district].subways[i].mapsLocation.setMap(null);}
 }
 
 function showAllBoroInfo(id_boro,mask_markers,opt){
@@ -709,14 +732,16 @@ function showHideBorosAndMarkers(mask_markers,mask_boros){ // note, this functio
 }
 
 
+/*-----------------D3 Scripts----------------------*/
+
+function createDistrictStats(){
+}
+
+
+
 /*-----------------Interactions ------------------*/
 /*-- Buttons and other interactions -- */
 /*Load and wait */
-$(document).ready(function(){
-    for(var i = 1 ; i<=5;i++){
-        $('#boro-map').append('<option value="' + i + '">' + boroughs[i].boro_name+ '</option>');
-    }
-});
 var MyVar;
 function waitLoad(){
     //loadBasicInfo();
@@ -761,7 +786,16 @@ function resetFormMap(){
         $("#show-data-explore").trigger("click");
         if(heatMapCrimeStatus==1)$("#heat-crime").trigger("click");
     }else{
-
+        $("input:checkbox[name = data-pick-rank]").each(function(){this.checked=0;});
+        if(selectedRow!=null){
+            $("#show-data-map-rank").trigger("click")
+            selectedRow.removeClass("rowSelectedColor");
+            hideBoros(rankMapBoro);
+            lostFocusDistrict(rankMapBoro,rankMapDistrict);
+            showHideMarkers(rankMapBoro,rankMapDistrict,0);
+            selectedRow = rankMapDistrict = rankMapBoro = null;
+        }
+        rankMarkers=0;
     }
 }
 
@@ -791,7 +825,7 @@ $("#boro-map").change(function(){
         $("#boro-dic-map").append('<option value="0">Choose...</option>');
         let lenDist = boroughs[boroughChosen].districts.length;
         for(let i = 1 ; i <=lenDist;i++){
-            $('#boro-dic-map').append('<option value="' + i + '">' + boroughs[boroughChosen].districts[i-1].number+ '</option>');
+            $('#boro-dic-map').append('<option value="' + i + '">' + i + '</option>');
         }
         $("#boro-dic-map").prop("disabled",false);
     }else{
@@ -872,5 +906,37 @@ $("#heat-crime").click(function(){
     }
 });
 
-
 //-----Map ranking tab -----
+
+var selectedRow;
+var rankMapDistrict,rankMapBoro,rankMarkers=0;
+
+function mapRankTableClick(){ // I create this like a function because i'll call it just after the creation of the table.
+    $("#table-ranking-map > tbody > tr").click(function(){
+        if(selectedRow !=null){
+            selectedRow.removeClass("rowSelectedColor");
+            hideBoros(rankMapBoro);
+            lostFocusDistrict(rankMapBoro,rankMapDistrict);
+            showHideMarkers(rankMapBoro,rankMapDistrict,0);
+        }
+        rankMapDistrict = $(this).find("td").eq(1).text() - 1;
+        rankMapBoro = boroR[$(this).find("td").eq(0).text()];
+        showBoros(rankMapBoro);
+        focusDistrict(rankMapBoro,rankMapDistrict);
+        showHideMarkers(rankMapBoro,rankMapDistrict,rankMarkers);
+        console.log(rankMapBoro + " " + rankMapDistrict);
+        $(this).addClass("rowSelectedColor");
+        selectedRow = $(this);
+    });
+}
+
+$("#show-data-map-rank").click(function(){
+    if(selectedRow!=null){
+        rankMarkers = 0;
+        $("input:checkbox[name = data-pick-rank]:checked").each(function(){
+            rankMarkers+=parseInt($(this).val());
+        });
+        console.log(rankMarkers);
+        showHideMarkers(rankMapBoro,rankMapDistrict,rankMarkers);
+    }
+});
