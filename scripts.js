@@ -681,6 +681,7 @@ function focusDistrict(id_boro,id_district){
         center: boroughs[id_boro].districts[id_district].borough_center,
         zoom: 13
     });
+    bubbleChart("#bubbles-map-container",id_boro,id_district,true);
     boroughs[id_boro].districts[id_district].mapsPolygon.setMap(mapTop);
 }
 function lostFocusDistrict(id_boro,id_district){//resets default colors.
@@ -689,6 +690,7 @@ function lostFocusDistrict(id_boro,id_district){//resets default colors.
         strokeOpacity:0.5,
         strokeWeight: 2
     });
+    bubbleChart("#bubbles-map-container",id_boro,id_district,false);
 }
 
 function showHideMarkers(id_boro,id_district,active){
@@ -734,9 +736,105 @@ function showHideBorosAndMarkers(mask_markers,mask_boros){ // note, this functio
 
 /*-----------------D3 Scripts----------------------*/
 
-function createDistrictStats(){
+
+function reescale(val){
+    while(val>200)val/=10;
+    return Math.ceil(val)+100;
 }
 
+function bubbleChart(container_id,id_boro,id_district,picked){
+    $(container_id).empty();//remove svg
+    if(!picked)return;
+    let svg = d3.select(container_id).append('svg');
+    if(!boroughs[id_boro].districts[id_district].habitable){
+        svg.attr("viewBox",'0 0 '+670+' '+ 175)
+            .attr("preserveAspectRatio","xMidYMid")
+            .style('width', '100%');
+
+        svg.append("rect")
+            .attr("width","100%").attr("height","100%")
+            .attr("fill","#d1d1d1");
+
+        svg.append("text")
+        .attr("x","50%")
+        .attr("y", "50%")
+        .attr("alignment-base","middle")
+        .attr("text-anchor", "middle")
+        .style("font-size","100px")
+        .style("fill","#797979")
+        .text("Non-habitable");
+        return;
+    }
+    let format = d3.format(",d");//decimal
+
+    let dF = jQuery.extend({},boroughs[id_boro].districts[id_district]); //dF dataFrame, clone object to avoid problems
+    dF.number_units = reescale(dF.number_units);dF.number_crimes = reescale(dF.number_crimes);dF.number_museums = reescale(dF.number_museums);
+    dF.number_subs = reescale(dF.number_subs);dF.distance = reescale(dF.distance);
+
+    //here performance does not matters because we only have 5 fields :v
+    let circleInfo = [];
+    circleInfo.push({
+        fieldName: "Units",
+        r: dF.number_units / 2,
+        x: dF.number_units / 2,
+        col: "#a0b100",
+        val:boroughs[id_boro].districts[id_district].number_units
+    });
+    circleInfo.push({
+        fieldName: "Crimes",
+        r: dF.number_crimes / 2,
+        x: circleInfo[0].x + circleInfo[0].r + dF.number_crimes / 2,
+        col: "#2bb100",
+        val:boroughs[id_boro].districts[id_district].number_crimes
+    });
+    circleInfo.push({
+        fieldName: "Distance",
+        r: dF.distance / 2,
+        x: circleInfo[1].x + circleInfo[1].r + dF.distance / 2,
+        col: "#0079b1",
+        val:Math.round(boroughs[id_boro].districts[id_district].distance) + " mts."
+    });
+    circleInfo.push({
+        fieldName: "Museums",
+        r: dF.number_museums / 2,
+        x: circleInfo[2].x + circleInfo[2].r + dF.number_museums / 2,
+        col: "#b1005d",
+        val:boroughs[id_boro].districts[id_district].number_museums
+    });
+    circleInfo.push({
+        fieldName: "Subways",
+        r: dF.number_subs / 2,
+        x: circleInfo[3].x + circleInfo[3].r + dF.number_subs / 2,
+        col: "#b16300",
+        val:boroughs[id_boro].districts[id_district].number_subs
+    });
+
+    //set svg specs and create
+    let width=Math.ceil(circleInfo[4].x+circleInfo[4].r),height = 0;
+    for(let i = 0 ; i <5;i++)height = Math.max(height,circleInfo[i].r*2);
+
+    svg.attr("viewBox",'0 0 '+width+' '+ height)
+        .attr("preserveAspectRatio","xMidYMid")
+        .style('width', '100%');
+
+    let node = svg.selectAll(".node")
+        .data(circleInfo)
+        .enter().append("g")
+        .attr("class","node")
+        .attr("transform",function(d){return "translate(" + d.x + "," + height/2 + ")"; });
+
+    let circle = node.append("circle")
+        .attr("r",function(d){return d.r;})
+        .attr("fill",function(d){return d.col;});
+
+    let text = node.append("text")
+        .attr("x", 0)
+        .attr("dy", ".35em")
+        .attr("text-anchor", "middle")
+        .style("font","30px")
+        .text(function(d){return d.val;});
+
+}
 
 
 /*-----------------Interactions ------------------*/
@@ -844,12 +942,12 @@ $("#boro-map").change(function(){
 
 $("#boro-dic-map").change(function(){
     if(this.value != 0){
-        focusDistrict(boroughChosen,this.value-1);
-        showHideMarkers(boroughChosen,this.value-1,activeMarkers);
         if(districtChosen != 0){
             showHideMarkers(boroughChosen,districtChosen-1,0);
             lostFocusDistrict(boroughChosen,districtChosen-1);
         }
+        focusDistrict(boroughChosen,this.value-1);
+        showHideMarkers(boroughChosen,this.value-1,activeMarkers);
         districtChosen = this.value;
     }else{
         lostFocusDistrict(boroughChosen,districtChosen-1);

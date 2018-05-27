@@ -45,6 +45,41 @@
     background-color: #8f6da3 !important;
 }
 
+/*Color box*/
+.color-box{
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    background-color: #ccc;
+    margin-right: 10px;
+    left: 5px;
+    top: 5px;
+}
+#conventions>p{
+    margin: 0;
+}
+
+/*Map navpills style custom*/
+.nav-pills > li > a.active {
+    background-color: #343a40 !important;
+    color: #ffffff !important;
+}
+
+.nav-pills > li > a{
+    color: #8794a1 !important;
+}
+
+.nav-pills > li > a.active:hover {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+.nav-pills > li > a:hover{
+    color: #000000 !important;
+}
+.nav-link-color {
+    color: #ffffff;
+}
+
 /*Loader, taken from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_loader5*/
 #load-screen {
   position: absolute;

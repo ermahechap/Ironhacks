@@ -40,210 +40,180 @@
 		<div id ="mapView"></div>
 		<div class = "paddingNavBar" id = "navBarSpacing"></div>
 		<div class="row ">
-				<div class="col-lg-4 height-100-wrapper">
-					<div class="card configMapSidebar">
-						<div class="card-header">
-							<ul class="nav nav-tabs card-header-tabs" role = "tablist">
-								<li class="nav-item">
-									<a class="nav-link active" id = "map-find-tab" data-toggle = "tab"
-									href = "#find-tab">Find</a>
-								</li>
-								<li class="nav-item">
-									<a class="nav-link" id = "map-explore-tab" data-toggle = "tab"
-									href = "#explore-tab">Explore</a>
-								</li>
-								<li class="nav-item">
-									<a class="nav-link" id = "map-ranking" data-toggle = "tab"
-									href = "#ranking-rab">Ranking</a>
-								</li>
-							</ul>
-						</div>
-						<div class="card-body configMapSidebar">
-							<div class = "tab-content" id = "contents-map">
-								<div class = "tab-pane show fade active" id = "find-tab">
-									<div class = "jumbotron">
-										<h4 class = "display-4">Location</h4>
-										<p class = "lead">
-											Choose the neighborhood you want!
-										</p>
-										<div class = "form-group">
-											<label for = "boro-map">Borough</label>
-											<select class="form-control form-control-sm" id = "boro-map">
-												<option value = "0">Choose...</option>
-											</select>
-											<label for = "boro-dic-map">District</label>
-											<select class="form-control form-control-sm" id = "boro-dic-map" disabled="">
-												<option value = "0">Choose...</option>
-											</select>
-										</div>
-										<hr />
-										<h4>Show More</h4>
-										<p class = "lead">
-											Pick the data you want to see in the neighborhood chosen!
-										</p>
-										<div class = "form-row">
-											<div class  = "col-lg-12">
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="1" id = "housing-enable" name = "data-pick"/>
-													<label class = "form-check-label" for ="housing-enable"><img class = "sm-icon iconHouse"/>Housing</label>
-												</div>
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="2" id = "neighborhood-enable" name = "data-pick"/>
-													<label class = "form-check-label" for ="neighborhood-enable"><img class = "sm-icon iconNeighborhood"/>Neighborhoods</label>
-												</div>
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="4" id = "museum-enable" name = "data-pick"/>
-													<label class = "form-check-label" for ="museum-enable"><img class = "sm-icon iconMuseum"/>Museums</label>
-												</div>
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="8" id = "subs-enable" name = "data-pick"/>
-													<label class = "form-check-label" for ="subs-enable"><img class = "sm-icon iconSubs"/>Subways</label>
-												</div>
-											</div>
-											<div class ="col-lg-12 mt-1">
-												<button class = "btn btn-dark btn-lg btn-block" id = "show-data-map">Show/Hide Markers</button>
-											</div>
-										</div>
+			<div class="col-lg-4 height-100-wrapper">
+				<div class="card configMapSidebar">
+					<div class="card-header">
+						<ul class="nav nav-pills card-header-pills" role = "tablist">
+							<li class="nav-item">
+								<a class="nav-link active" id = "map-find-tab" data-toggle = "tab"
+								href = "#find-tab">Find</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" id = "map-explore-tab" data-toggle = "tab"
+								href = "#explore-tab">Explore</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" id = "map-ranking" data-toggle = "tab"
+								href = "#ranking-rab">Ranking</a>
+							</li>
+						</ul>
+					</div>
+					<div class="card-body configMapSidebar">
+						<div class = "tab-content" id = "contents-map">
+							<div class = "tab-pane show fade active" id = "find-tab">
+								<div class = "jumbotron">
+									<h4 class = "display-4">Location</h4>
+									<p class = "lead">
+										Choose the neighborhood you want!
+									</p>
+									<div class = "form-group">
+										<label for = "boro-map">Borough</label>
+										<select class="form-control form-control-sm" id = "boro-map">
+											<option value = "0">Choose...</option>
+										</select>
+										<label for = "boro-dic-map">District</label>
+										<select class="form-control form-control-sm" id = "boro-dic-map" disabled="">
+											<option value = "0">Choose...</option>
+										</select>
 									</div>
-								</div>
-								<div class = "tab-pane show fade" id = "explore-tab">
-									<div class = "jumbotron">
-										<h4 class = "display-4">Tools</h4>
-										<p class = "lead">
-											Explore the datasets!
-										</p>
-										<hr />
-										<p class = "lead">
-											Select the districts borders to be shown!
-										</p>
-										<div class = "form-group">
-											<div class = "row">
-												<div class = "col-lg-12">
-													<div class  = "row">
-														<div class = "col-lg-6">
-															<div class = "form-check">
-																<input class = "form-check-input" type="checkbox" value="1" id = "manhattan-enable" name = "borough-pick"/>
-																<label class = "form-check-label" for ="manhattan-enable">Manhattan</label>
-															</div>
-															<div class = "form-check">
-																<input class = "form-check-input" type="checkbox" value="2" id = "bronx-enable" name = "borough-pick"/>
-																<label class = "form-check-label" for ="bronx-enable">Bronx</label>
-															</div>
-															<div class = "form-check">
-																<input class = "form-check-input" type="checkbox" value="4" id = "brooklyn-enable" name = "borough-pick"/>
-																<label class = "form-check-label" for ="brooklyn-enable">Brooklyn</label>
-															</div>
-														</div>
-														<div class ="col-lg-6">
-															<div class = "form-check">
-																<input class = "form-check-input" type="checkbox" value="8" id = "queens-enable" name = "borough-pick"/>
-																<label class = "form-check-label" for ="queens-enable">Queens</label>
-															</div>
-															<div class = "form-check">
-																<input class = "form-check-input" type="checkbox" value="16" id = "staten-enable" name = "borough-pick"/>
-																<label class = "form-check-label" for ="staten-enable">Staten Island</label>
-															</div>
-														</div>
-													</div>
-												</div>
+									<hr />
+									<h4>Show More</h4>
+									<p class = "lead">
+										Pick the data you want to see in the neighborhood chosen!
+									</p>
+									<div class = "form-row">
+										<div class  = "col-lg-12">
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="1" id = "housing-enable" name = "data-pick"/>
+												<label class = "form-check-label" for ="housing-enable"><img class = "sm-icon iconHouse"/>Housing</label>
 											</div>
-											<button class = "btn btn-dark btn-lg btn-block mt-1" id = "show-borough">Show/Hide Borders</button>
-										</div>
-										<hr />
-										<p class="lead">
-											Markers
-										</p>
-										<div class = "form-row">
-											<div class = "form-group col-lg-12">
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="1" id = "housing-enable-2" name = "borough-pick-2"/>
-													<label class = "form-check-label" for ="housing-enable-2"><img class = "sm-icon iconHouse"/>Housing</label>
-												</div>
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="2" id = "neighborhood-enable-2" name = "borough-pick-2"/>
-													<label class = "form-check-label" for ="neighborhood-enable-2"><img class = "sm-icon iconNeighborhood"/>Neighborhoods</label>
-												</div>
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="4" id = "museum-enable-2" name = "borough-pick-2"/>
-													<label class = "form-check-label" for ="museum-enable-2"><img class = "sm-icon iconMuseum"/>Museums</label>
-												</div>
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="2" id = "neighborhood-enable" name = "data-pick"/>
+												<label class = "form-check-label" for ="neighborhood-enable"><img class = "sm-icon iconNeighborhood"/>Neighborhoods</label>
+											</div>
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="4" id = "museum-enable" name = "data-pick"/>
+												<label class = "form-check-label" for ="museum-enable"><img class = "sm-icon iconMuseum"/>Museums</label>
+											</div>
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="8" id = "subs-enable" name = "data-pick"/>
+												<label class = "form-check-label" for ="subs-enable"><img class = "sm-icon iconSubs"/>Subways</label>
 											</div>
 										</div>
-										<button class = "btn btn-dark btn-lg btn-block mt-1" id = "show-data-explore">Show/Hide Markers</button>
-										<hr />
-										<p class = "lead">
-											Heatmaps!
-										</p>
-										<div class = "form-row">
-											<button class = "btn btn-dark btn-lg btn-block" id = "heat-crime">Show/Hide Crime</button>
-										</div>
-									</div>
-								</div>
-								<div class = "tab-pane show fade" id = "ranking-rab">
-									<div class = "jumbotron">
-										<h4 class = "display-4">Rankings</h4>
-										<p class = "lead">
-											Ranking of districts, pick one to visualize information!
-										</p>
-										<div class="table-responsive table-hover" style="height:30vh;">
-											<table class = "table" id = "table-ranking-map"></table>
-										</div>
-										<hr />
-										<p class = "lead">
-											Markers
-										</p>
-										<div class = "form-row">
-											<div class  = "col-lg-12">
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="1" id = "housing-enable" name = "data-pick-rank"/>
-													<label class = "form-check-label" for ="housing-enable"><img class = "sm-icon iconHouse"/>Housing</label>
-												</div>
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="2" id = "neighborhood-enable" name = "data-pick-rank"/>
-													<label class = "form-check-label" for ="neighborhood-enable"><img class = "sm-icon iconNeighborhood"/>Neighborhoods</label>
-												</div>
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="4" id = "museum-enable" name = "data-pick-rank"/>
-													<label class = "form-check-label" for ="museum-enable"><img class = "sm-icon iconMuseum"/>Museums</label>
-												</div>
-												<div class = "form-check">
-													<input class = "form-check-input" type="checkbox" value="8" id = "subs-enable" name = "data-pick-rank"/>
-													<label class = "form-check-label" for ="subs-enable"><img class = "sm-icon iconSubs"/>Subways</label>
-												</div>
-											</div>
-											<div class ="col-lg-12 mt-1">
-												<button class = "btn btn-dark btn-lg btn-block" id = "show-data-map-rank">Show/Hide Markers</button>
-											</div>
+										<div class ="col-lg-12 mt-1">
+											<button class = "btn btn-dark btn-lg btn-block" id = "show-data-map">Show/Hide Markers</button>
 										</div>
 									</div>
 								</div>
 							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-lg-8">
-					<div class="row ">
-						<div class="col-lg-12">
-							<div class="rounded" id="mapContainer"></div>
-							<div class="card-group" id="bottomMap">
-								<div class="card">
-									<div class="card-body">
-										<h5 class="card-title">Graph_01</h5>
-										<p class="card-text">
-											asdd
-										</p>
+							<div class = "tab-pane show fade" id = "explore-tab">
+								<div class = "jumbotron">
+									<h4 class = "display-4">Tools</h4>
+									<p class = "lead">
+										Explore the datasets!
+									</p>
+									<hr />
+									<p class = "lead">
+										Select the districts borders to be shown!
+									</p>
+									<div class = "form-group">
+										<div class = "row">
+											<div class = "col-lg-12">
+												<div class  = "row">
+													<div class = "col-lg-6">
+														<div class = "form-check">
+															<input class = "form-check-input" type="checkbox" value="1" id = "manhattan-enable" name = "borough-pick"/>
+															<label class = "form-check-label" for ="manhattan-enable">Manhattan</label>
+														</div>
+														<div class = "form-check">
+															<input class = "form-check-input" type="checkbox" value="2" id = "bronx-enable" name = "borough-pick"/>
+															<label class = "form-check-label" for ="bronx-enable">Bronx</label>
+														</div>
+														<div class = "form-check">
+															<input class = "form-check-input" type="checkbox" value="4" id = "brooklyn-enable" name = "borough-pick"/>
+															<label class = "form-check-label" for ="brooklyn-enable">Brooklyn</label>
+														</div>
+													</div>
+													<div class ="col-lg-6">
+														<div class = "form-check">
+															<input class = "form-check-input" type="checkbox" value="8" id = "queens-enable" name = "borough-pick"/>
+															<label class = "form-check-label" for ="queens-enable">Queens</label>
+														</div>
+														<div class = "form-check">
+															<input class = "form-check-input" type="checkbox" value="16" id = "staten-enable" name = "borough-pick"/>
+															<label class = "form-check-label" for ="staten-enable">Staten Island</label>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<button class = "btn btn-dark btn-lg btn-block mt-1" id = "show-borough">Show/Hide Borders</button>
+									</div>
+									<hr />
+									<p class="lead">
+										Markers
+									</p>
+									<div class = "form-row">
+										<div class = "form-group col-lg-12">
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="1" id = "housing-enable-2" name = "borough-pick-2"/>
+												<label class = "form-check-label" for ="housing-enable-2"><img class = "sm-icon iconHouse"/>Housing</label>
+											</div>
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="2" id = "neighborhood-enable-2" name = "borough-pick-2"/>
+												<label class = "form-check-label" for ="neighborhood-enable-2"><img class = "sm-icon iconNeighborhood"/>Neighborhoods</label>
+											</div>
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="4" id = "museum-enable-2" name = "borough-pick-2"/>
+												<label class = "form-check-label" for ="museum-enable-2"><img class = "sm-icon iconMuseum"/>Museums</label>
+											</div>
+										</div>
+									</div>
+									<button class = "btn btn-dark btn-lg btn-block mt-1" id = "show-data-explore">Show/Hide Markers</button>
+									<hr />
+									<p class = "lead">
+										Heatmaps!
+									</p>
+									<div class = "form-row">
+										<button class = "btn btn-dark btn-lg btn-block" id = "heat-crime">Show/Hide Crime</button>
 									</div>
 								</div>
-								<div class="card">
-									<div class="card-body">
-										<h5 class="card-title">Graph_02</h5>
-										<p class="card-text">Graph 02</p>
+							</div>
+							<div class = "tab-pane show fade" id = "ranking-rab">
+								<div class = "jumbotron">
+									<h4 class = "display-4">Rankings</h4>
+									<p class = "lead">
+										Ranking of districts, pick one to visualize information*!
+									</p>
+									<div class="table-responsive table-hover" style="height:30vh;">
+										<table class = "table" id = "table-ranking-map"></table>
 									</div>
-								</div>
-								<div class="card">
-									<div class="card-body">
-										<h5 class="card-title">Graph_03</h5>
-										<p class="card-text">Graph 03</p>
+									<hr />
+									<p class = "lead">
+										Markers
+									</p>
+									<div class = "form-row">
+										<div class  = "col-lg-12">
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="1" id = "housing-enable" name = "data-pick-rank"/>
+												<label class = "form-check-label" for ="housing-enable"><img class = "sm-icon iconHouse"/>Housing</label>
+											</div>
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="2" id = "neighborhood-enable" name = "data-pick-rank"/>
+												<label class = "form-check-label" for ="neighborhood-enable"><img class = "sm-icon iconNeighborhood"/>Neighborhoods</label>
+											</div>
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="4" id = "museum-enable" name = "data-pick-rank"/>
+												<label class = "form-check-label" for ="museum-enable"><img class = "sm-icon iconMuseum"/>Museums</label>
+											</div>
+											<div class = "form-check">
+												<input class = "form-check-input" type="checkbox" value="8" id = "subs-enable" name = "data-pick-rank"/>
+												<label class = "form-check-label" for ="subs-enable"><img class = "sm-icon iconSubs"/>Subways</label>
+											</div>
+										</div>
+										<div class ="col-lg-12 mt-1">
+											<button class = "btn btn-dark btn-lg btn-block" id = "show-data-map-rank">Show/Hide Markers</button>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -251,8 +221,40 @@
 					</div>
 				</div>
 			</div>
+			<div class="col-lg-8">
+				<div class="row ">
+					<div class="col-lg-12">
+						<div class="rounded" id="mapContainer"></div>
+					</div>
+				</div>
+				<div class = "row">
+					<div class = "col-lg-12">
+						<div class = "card">
+							<div class = "card-header">Information</div>
+							<div class = "card-body">
+								<div class = "row">
+									<div class = "col-lg-8">
+										<div id = "bubbles-map-container" style="width: 60vh; margin: 0 auto;"></div>
+									</div>
+									<div class = "col-lg-4">
+										<p class = "card-text">Conventions:</p>
+										<div id = "conventions">
+											<p><div class = "color-box text-left" style = "background-color:#a0b100;"></div># Units</p>
+											<p><div class = "color-box text-left" style = "background-color:#2bb100;"></div># Crimes</p>
+											<p><div class = "color-box text-left" style = "background-color:#0079b1;"></div>Distance(mts.)</p>
+											<p><div class = "color-box text-left" style = "background-color:#b1005d;"></div># Museums</p>
+											<p><div class = "color-box text-left" style = "background-color:#b16300;"></div># Subways</p>
+										</div>
+									</div>
+								</div>
 
+							</div>
+						</div>
+					</div>
 
+				</div>
+			</div>
+		</div>
 		<hr/>
 
 		<div class="row" id = "dashboard">
@@ -262,7 +264,7 @@
 					<p class = "lead">
 						Information about housing!
 					</p>
-					<p>*Bor-Borough, Dic-District, D-Distance, A-Affordability, S-Safety, C-Culture, T-Transit,Tot-Total Score</p>
+					
 				</div>
 			</div>
 		</div>
@@ -282,24 +284,24 @@
 				<div class="row p-3">
 					<div class = "col-lg-4">
 						<span class = "text-muted">NYU - Stern School of Business Rooms by Edwin Mahecha</span>
+						<p class = "small">*Bor-Borough, Dic-District, D-Distance, A-Affordability, S-Safety, C-Culture, T-Transit,TScore-Total Score</p>
 					</div>
 					<div class = "col-lg-8">
-						<span class = "text-muted">Icons by:</span>
+						<span class = "text-muted small">Icons by:</span>
 						<br>
-						<span class = "text-muted">
+						<span class = "text-muted small">
 							<a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
 						</span>
 						<br>
-						<span class = "text-muted">
+						<span class = "text-muted small">
 							<a href="https://www.flaticon.com/authors/vectors-market" title="Vectors Market">Vectors Market</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
 						</span>
 						<br>
-						<span class = "text-muted">
+						<span class = "text-muted small">
 							<a href="https://www.flaticon.com/authors/alfredo-hernandez" title="Alfredo Hernandez">Alfredo Hernandez</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
 						</span>
 					</div>
 				</div>
-
 			</div>
 		</footer>
 	</div>
