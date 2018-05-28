@@ -28,9 +28,6 @@
 							<a class="nav-link" href="#dashboard">Dashboard</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#compare">Compare</a>
-						</li>
-						<li class="nav-item">
 							<a class="nav-link" href="#downloads">Downloads</a>
 						</li>
 					</ul>
@@ -262,11 +259,11 @@
 				<div class ="jumbotron">
 					<h4 class = "display-4">Dashboard</h4>
 					<p class = "lead">
-						Pick the districts you want to compare!
+						Click on the districts you want to compare!
 					</p>
 					<div class = "row">
 						<div class="col-lg-6">
-							<div class="table-responsive table-hover" style="height:70vh;">
+							<div class="table-responsive table-hover" style="height:50vh;">
 								<table class = "table" id = "table-ranking-dashboard"></table>
 							</div>
 							<p class = "font-weight-light">* Check footer note for abbreviation  ** Scores in this table calculated with data standarization</p>
@@ -275,56 +272,45 @@
 							<div class="row">
 								<div class="col-lg-12">
 									<div class="card">
-										<div class="card-header">
-											Crimes
-										</div>
 										<div class="card-body">
-											<div id = "dashboard-bar-crimes" style="width: 80vh; margin: 0 auto;"></div>
+											<h5 class="card-title">Crimes</h5>
+											<div id = "dashboard-bar-crimes" style="margin: 0 auto;"></div>
 										</div>
 									</div>
 								</div>
 							</div>
-							<div class="row">
-								<div class="col-lg-6">
-									<div class="card">
-										<div class="card-header">
-											Distances
-										</div>
-										<div class="card-body">
-											<div id = "dashboard-distance-ring" style="width: 30vh; margin:auto;"></div>
-										</div>
+						</div>
+					</div>
+					<div class="row justify-content-md-center">
+						<div class="col-lg-auto">
+							<div id="legend-dashboard"></div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="card-group">
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Distance</h5>
+										<div id="dashboard-distance-ring" style="margin:0 auto;"></div>
 									</div>
 								</div>
-								<div class="col-lg-6">
-									<div class="card">
-										<div class="card-header">
-											Units
-										</div>
-										<div class="card-body">
-											<div id = "dashboard-units-ring" style="width: 30vh; margin:auto;"></div>
-										</div>
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Units</h5>
+										<div id="dashboard-units-ring" style="margin:0 auto;"></div>
 									</div>
 								</div>
-							</div>
-							<div class="row">
-								<div class="col-lg-6">
-									<div class="card">
-										<div class="card-header">
-											Museums
-										</div>
-										<div class="card-body">
-											<div id = "dashboard-museums-ring" style="width: 30vh; margin:auto;"></div>
-										</div>
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Museums</h5>
+										<div id="dashboard-museums-ring" style="margin:0 auto;"></div>
 									</div>
 								</div>
-								<div class="col-lg-6">
-									<div class="card">
-										<div class="card-header">
-											Subways
-										</div>
-										<div class="card-body">
-											<div id = "dashboard-subways-ring" style="width: 30vh; margin:auto;"></div>
-										</div>
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Subways</h5>
+										<div id="dashboard-subways-ring" style="margin:0 auto;"></div>
 									</div>
 								</div>
 							</div>
@@ -336,12 +322,16 @@
 
 		<hr/>
 
-		<div class="row " id = "compare">
-		</div>
 
-		<hr/>
-
-		<div class="row " id = "downloads">
+		<div class="row" id = "downloads">
+			<div class="col-lg-12">
+				<div class="jumbotron">
+					<h4 class = "display-4">Downloads</h4>
+					<p class = "lead">
+						View the tables and download them!
+					</p>
+				</div>
+			</div>
 		</div>
 		<hr/>
 		<footer class = "footer">

@@ -35,7 +35,7 @@
 
 /*hoover bars*/
 .bar:hover{
-    fill: #888888;
+    fill: #888888 !important;
 }
 /*ring graphs*/
 .arc text {
@@ -69,6 +69,12 @@
     left: 5px;
     top: 5px;
 }
+
+.horizontal-li{
+    float: left;
+    margin-right: 10px;
+}
+
 #conventions>p{
     margin: 0;
 }

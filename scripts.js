@@ -1069,11 +1069,27 @@ function dashboardTableClick(){
 }
 
 function updateDashCharts(){
+    updateLegend("#legend-dashboard");
     barChart("#dashboard-bar-crimes","number_crimes");
     ringChart("#dashboard-distance-ring","distance");
     ringChart("#dashboard-units-ring","number_units");
     ringChart("#dashboard-museums-ring","number_museums");
     ringChart("#dashboard-subways-ring","number_subs");
+}
+
+function updateLegend(container_id){
+    $(container_id).empty();
+    $(container_id).append('<ul style="list-style:none;"></ul>')
+    let ct = 0;
+    for(let it in chosenOnes){
+        let id_boro = chosenOnes[it].id_boro, id_district = chosenOnes[it].id_district+1;
+        let label = boroughs[id_boro].boro_name+ "-" +id_district;
+        $(container_id+" > ul").append(
+            '<li class = "horizontal-li">'
+                +'<div class = "color-box" style = "background-color:' + colorsDashboard[ct++] + ';"></div>'+ label
+                +'</li>'
+        );
+    }
 }
 
 
@@ -1174,11 +1190,12 @@ function ringChart(container_id,which_bar){
 
     g.append("path")
         .attr("d",arc)
+        .attr("class","bar")
         .style('fill',function(d){return d.data.col;});
 
     g.append("text")
         .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
         .attr("dy", ".35em")
-        .text(function(d) { return d.value; });
+        .text(function(d) { return (d.value==0)?'':d.value; });
 
 }
