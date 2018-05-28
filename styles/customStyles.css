@@ -33,6 +33,20 @@
     background-color: #000000;
 }
 
+/*hoover bars*/
+.bar:hover{
+    fill: #888888;
+}
+/*ring graphs*/
+.arc text {
+  font: 20px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+
 /*Table interactions*/
 .rowCursor > th{
     cursor: pointer;

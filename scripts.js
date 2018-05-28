@@ -257,6 +257,8 @@ function loadData(){
 
         //apend to tableRanks
         createtable("#table-ranking-map",263);//263 is a bitmask, check function for details
+        createtable("#table-ranking-dashboard",511);
+        dashboardTableClick();//for the click event
         mapRankTableClick(); // for the click event
         //create selector for tab1 of map
         for(var i = 1 ; i<=5;i++){
@@ -351,7 +353,7 @@ function rankFunction(){//executed when all data is loaded
 
 //rowMask allows me to pick the columns I want.
 //rank - 1 , borough - 2, District - 4, Distance - 8, Affortability - 16, Safety - 32, Culture - 64, Transit -128, TotalScore-256
-function createtable(tableId,rowMask){ // component to create ranking tables in the id received
+function createtable(container_id,rowMask){ // component to create ranking tables in the id received
     let tableHeader = '<thead class = "thead-dark"><tr>'
         +((rowMask&1)?'<th scope = "col">#</th>':'')
         +((rowMask&2)?'<th scope="col">Bor</th>':'')
@@ -363,12 +365,11 @@ function createtable(tableId,rowMask){ // component to create ranking tables in 
         +((rowMask&128)?'<th scope = "col">T.</th>':'')
         +((rowMask&256)?'<th scope = "col">TScore</th>':'')
         +'</tr></thead>';
-
-    $(tableId).append(tableHeader);
-    $(tableId).append('<tbody></tbody>');
+    $(container_id).append(tableHeader);
+    $(container_id).append('<tbody></tbody>');
     let len = districtsRank.length;
     for(let i = 0 ; i <len ; i++){
-        $(tableId).find('tbody').append(
+        $(container_id).find('tbody').append(
             '<tr class = "rowCursor">'
             +((rowMask&1)?('<th scope="row">'+districtsRank[i].rank +'</th>'):'')
             +((rowMask&2)?("<td>"+boroughs[districtsRank[i].id_boro].boro_name +"</td>"):'')
@@ -862,7 +863,7 @@ $(".iconHouse").attr("src",iconUrls.house);
 $(".iconMuseum").attr("src",iconUrls.museum);
 $(".iconNeighborhood").attr("src",iconUrls.neighborhood);
 $(".iconSubs").attr("src",iconUrls.subway);
-/*Map interactions*/
+/*----Map interactions----*/
 
 //Detect tabs change in the tabs of the map and reset form
 var currentMapTab = 0;
@@ -1022,7 +1023,6 @@ function mapRankTableClick(){ // I create this like a function because i'll call
         showBoros(rankMapBoro);
         focusDistrict(rankMapBoro,rankMapDistrict);
         showHideMarkers(rankMapBoro,rankMapDistrict,rankMarkers);
-        console.log(rankMapBoro + " " + rankMapDistrict);
         $(this).addClass("rowSelectedColor");
         selectedRow = $(this);
     });
@@ -1038,3 +1038,147 @@ $("#show-data-map-rank").click(function(){
         showHideMarkers(rankMapBoro,rankMapDistrict,rankMarkers);
     }
 });
+
+/*-----dashboard Interactions-----------*/
+
+var chosenOnes = {},qt = 0;
+var rankDashDistrict,rankDashBoro;
+
+
+function dashboardTableClick(){
+    $("#table-ranking-dashboard > tbody > tr").click(function(){
+        rankDashDistrict = $(this).find("td").eq(1).text() - 1;
+        rankDashBoro = boroR[$(this).find("td").eq(0).text()];
+        keyMap = rankDashBoro*100+rankDashDistrict;
+        if(keyMap in chosenOnes){
+            $(this).removeClass("rowSelectedColor");
+            delete chosenOnes[keyMap];
+            qt--;
+        }else{
+            if(qt+1>5){
+                alert("You can only pick up to five(5) districts");
+            }else{
+                $(this).addClass("rowSelectedColor");
+                //chosenOnes.set(keyMap,{id_boro:rankDashBoro, id_district: rankDashDistrict});
+                chosenOnes[keyMap] = {id_boro:rankDashBoro, id_district: rankDashDistrict};
+                qt++;
+            }
+        }
+        updateDashCharts();
+    });
+}
+
+function updateDashCharts(){
+    barChart("#dashboard-bar-crimes","number_crimes");
+    ringChart("#dashboard-distance-ring","distance");
+    ringChart("#dashboard-units-ring","number_units");
+    ringChart("#dashboard-museums-ring","number_museums");
+    ringChart("#dashboard-subways-ring","number_subs");
+}
+
+
+var colorsDashboard = ["#ff0000","#ff8d00","#ffdb00","#00d619","#009fff"];
+
+function barChart(container_id,which_bar){
+    //clear div
+    $(container_id).empty();
+    //parse data into a dataFrame
+    let dat = [],maxVal = 0,ct=0;
+    for(let it in chosenOnes){
+        let id_boro = chosenOnes[it].id_boro, id_district = chosenOnes[it].id_district+1;
+        let val = boroughs[id_boro].districts[id_district-1][which_bar];
+        maxVal - Math.max(maxVal,val);
+        dat.push({
+            boro_district: boroughs[id_boro].boro_name+ "-" +id_district,
+            val:val,
+            col:colorsDashboard[ct++]
+        });
+    }
+    //build svg
+
+    let margin = {top: 10,right:50,bottom:20,left:50};
+    let width = 600 -margin.left - margin.right;
+    let height = 300 -margin.top - margin.bottom;
+
+    let svg = d3.select(container_id).append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("viewBox",'0 0 '+600+' '+ 300)
+        .attr("preserveAspectRatio","xMidYMid")
+        .style('width', '100%')
+        .append("g")
+        .attr("transform","translate(" + margin.left + "," + margin.top +")");
+
+    let x = d3.scaleBand().range([0,width]);
+    let y = d3.scaleLinear().range([height,0]);
+
+    x.domain(dat.map(function(d){return d.boro_district;}));
+    y.domain([0, d3.max(dat,function(d){return d.val;})]);
+
+    svg.append("g")
+    .attr("transform","translate(0,"+ height +")")
+    .call(d3.axisBottom(x));
+
+    svg.append("g")
+    .call(d3.axisLeft(y));
+
+    svg.selectAll(".bar").data(dat).enter().append("rect")
+        .attr("class","bar")
+        .attr("fill",function(d){return d.col;})
+        .attr("x",function(d){return x(d.boro_district); })
+        .attr("y",function(d){return y(d.val); })
+        .attr("width",x.bandwidth())
+        .attr("height",function(d){return height-y(d.val); });
+
+}
+
+
+function ringChart(container_id,which_bar){
+    //clear div
+    $(container_id).empty();
+    //parse data into a dataFrame
+    let dat = [],maxVal = 0,ct=0;
+    for(let it in chosenOnes){
+        let id_boro = chosenOnes[it].id_boro, id_district = chosenOnes[it].id_district+1;
+        let val = boroughs[id_boro].districts[id_district-1][which_bar];
+        maxVal - Math.max(maxVal,val);
+        dat.push({
+            boro_district: boroughs[id_boro].boro_name+ "-" +id_district,
+            val:Math.round(val),
+            col:colorsDashboard[ct++]
+        });
+    }
+
+    //graph
+
+    let width = 400, height = 400, radius = 200;
+    let svg = d3.select(container_id).append("svg")
+    .attr("width",width)
+    .attr("height",height)
+    .attr("viewBox",'0 0 '+width+' '+ height)
+    .attr("preserveAspectRatio","xMidYMid")
+    .style('width', '100%')
+    .append("g")
+    .attr("transform","translate("+ width/2 +","+ height/2 +")");
+
+    let arc = d3.arc().outerRadius(radius-10).innerRadius(radius-70);
+
+    let pie = d3.pie()
+        .sort(null)
+        .value(function(d){return d.val;});
+
+
+    let g = svg.selectAll(".arc").data(pie(dat)).enter()
+        .append("g")
+        .attr("class","arc");
+
+    g.append("path")
+        .attr("d",arc)
+        .style('fill',function(d){return d.data.col;});
+
+    g.append("text")
+        .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+        .attr("dy", ".35em")
+        .text(function(d) { return d.value; });
+
+}
