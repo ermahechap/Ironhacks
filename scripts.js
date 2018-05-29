@@ -1,4 +1,3 @@
-dt/*Ranking Script*/
 /* --------------------- Load the datasets -------------------------*/
 
 var URLS = [
