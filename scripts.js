@@ -265,7 +265,6 @@ function loadData(){
         $(".downloads-select input[value = 1]").trigger("click");//awful, but meh!
     })
 }
-
 /*----------------------------------------Scripts Ranking--------------------------------*/
 
 function generateRankingStuff(){
