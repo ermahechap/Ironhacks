@@ -234,7 +234,7 @@
 										<div id = "bubbles-map-container" style="width: 60vh; margin: 0 auto;"></div>
 									</div>
 									<div class = "col-lg-4">
-										<p class = "card-text">Conventions:</p>
+										<p class = "card-text">Legend:</p>
 										<div id = "conventions">
 											<p><div class = "color-box text-left" style = "background-color:#a0b100;"></div># Units</p>
 											<p><div class = "color-box text-left" style = "background-color:#2bb100;"></div># Crimes</p>
@@ -259,7 +259,7 @@
 				<div class ="jumbotron">
 					<h4 class = "display-4">Dashboard</h4>
 					<p class = "lead">
-						Click on the districts you want to compare!
+						Click on the districts that you want to compare!
 					</p>
 					<div class = "row">
 						<div class="col-lg-6">
@@ -274,14 +274,16 @@
 									<div class="card">
 										<div class="card-body">
 											<h5 class="card-title">Crimes</h5>
-											<div id = "dashboard-bar-crimes" style="margin: 0 auto;"></div>
+											<div id = "dashboard-bar-crimes" style="margin: 0 auto;">
+												<svg viewBox="0 0 670 350" preserveAspectRatio="xMidYMid" style="width: 100%;"><rect width="100%" height="100%" fill="#d1d1d1"></rect><text x="50%" y="50%" alignment-base="middle" text-anchor="middle" style="font-size: 100px; fill: rgb(121, 121, 121);">No-data</text></svg>
+											</div>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-					<div class="row justify-content-md-center">
+					<div class="row justify-content-lg-center">
 						<div class="col-lg-auto">
 							<div id="legend-dashboard"></div>
 						</div>
@@ -291,45 +293,121 @@
 							<div class="card-group">
 								<div class="card">
 									<div class="card-body">
-										<h5 class="card-title">Distance</h5>
-										<div id="dashboard-distance-ring" style="margin:0 auto;"></div>
+										<h5 class="card-title">Distance(mts.)</h5>
+										<div id="dashboard-distance-ring" style="margin:0 auto;">
+											<svg viewBox="0 0 670 350" preserveAspectRatio="xMidYMid" style="width: 100%;"><rect width="100%" height="100%" fill="#d1d1d1"></rect><text x="50%" y="50%" alignment-base="middle" text-anchor="middle" style="font-size: 100px; fill: rgb(121, 121, 121);">No-data</text></svg>
+										</div>
 									</div>
 								</div>
 								<div class="card">
 									<div class="card-body">
-										<h5 class="card-title">Units</h5>
-										<div id="dashboard-units-ring" style="margin:0 auto;"></div>
+										<h5 class="card-title">Units(houses)</h5>
+										<div id="dashboard-units-ring" style="margin:0 auto;">
+											<svg viewBox="0 0 670 350" preserveAspectRatio="xMidYMid" style="width: 100%;"><rect width="100%" height="100%" fill="#d1d1d1"></rect><text x="50%" y="50%" alignment-base="middle" text-anchor="middle" style="font-size: 100px; fill: rgb(121, 121, 121);">No-data</text></svg>
+										</div>
 									</div>
 								</div>
 								<div class="card">
 									<div class="card-body">
 										<h5 class="card-title">Museums</h5>
-										<div id="dashboard-museums-ring" style="margin:0 auto;"></div>
+										<div id="dashboard-museums-ring" style="margin:0 auto;">
+											<svg viewBox="0 0 670 350" preserveAspectRatio="xMidYMid" style="width: 100%;"><rect width="100%" height="100%" fill="#d1d1d1"></rect><text x="50%" y="50%" alignment-base="middle" text-anchor="middle" style="font-size: 100px; fill: rgb(121, 121, 121);">No-data</text></svg>
+										</div>
 									</div>
 								</div>
 								<div class="card">
 									<div class="card-body">
-										<h5 class="card-title">Subways</h5>
-										<div id="dashboard-subways-ring" style="margin:0 auto;"></div>
+										<h5 class="card-title">Subways(entrances)</h5>
+										<div id="dashboard-subways-ring" style="margin:0 auto;">
+											<svg viewBox="0 0 670 350" preserveAspectRatio="xMidYMid" style="width: 100%;"><rect width="100%" height="100%" fill="#d1d1d1"></rect><text x="50%" y="50%" alignment-base="middle" text-anchor="middle" style="font-size: 100px; fill: rgb(121, 121, 121);">No-data</text></svg>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
+					<hr/>
+					<p class = "lead">
+						Top 10 by basic characteristics!
+					</p>
+					<div class = "row">
+						<div class="col-lg-12">
+							<div class="card-group">
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Crimes(mts.)</h5>
+									</div>
+									<div class="table-responsive table-hover table-sm">
+										<table class = "table" id = "table-crimes-rank"></table>
+									</div>
+								</div>
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Units(mts.)</h5>
+									</div>
+									<div class="table-responsive table-hover table-sm">
+										<table class = "table" id = "table-units-rank"></table>
+									</div>
+								</div>
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Distance(mts.)</h5>
+									</div>
+									<div class="table-responsive table-hover table-sm">
+										<table class = "table" id = "table-distance-rank"></table>
+									</div>
+								</div>
+							</div>
+							<p class="font-weight-light">* Check footer note for abbreviation  ** Scores in this table calculated with data standarization</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
-
 		<hr/>
-
-
 		<div class="row" id = "downloads">
 			<div class="col-lg-12">
 				<div class="jumbotron">
 					<h4 class = "display-4">Downloads</h4>
 					<p class = "lead">
-						View the tables and download them!
+						Pick a table explore it!, download it!
 					</p>
+					<div class="row justify-content-between">
+						<div class="col-lg-6">
+							<div class="btn-group btn-group-toggle downloads-select" data-toggle="buttons">
+								<label class="btn btn-secondary btn-lg">
+						    		<input type="radio" name="options" value="1" autocomplete="off"> Ranking
+							  	</label>
+								<label class="btn btn-secondary btn-lg">
+							    	<input type="radio" name="options" value="2" autocomplete="off"> Neighborhoods
+							  	</label>
+								<label class="btn btn-secondary btn-lg">
+							    	<input type="radio" name="options" value="3" autocomplete="off"> Housing
+						  		</label>
+								<label class="btn btn-secondary btn-lg">
+							    	<input type="radio" name="options" value="4" autocomplete="off"> Crimes
+						  		</label>
+								<label class="btn btn-secondary btn-lg">
+							    	<input type="radio" name="options" value="5" autocomplete="off"> Museums
+						  		</label>
+								<label class="btn btn-secondary btn-lg">
+							    	<input type="radio" name="options" value="6" autocomplete="off"> Subways
+						  		</label>
+							</div>
+						</div>
+						<div class="col-lg-2">
+							<a class="btn btn-info btn-lg" role="button" id = "download-btn">Download table</a>
+						</div>
+					</div>
+					<br>
+					<div class="row justify-content-lg-center">
+						<div class="col-lg-10">
+							<div class="table-responsive table-hover" style="height:70vh;">
+								<table class="table" id="table-downloads"></table>
+							</div>
+							<p class="font-weight-light">*** Table truncate to the first 100 values, to see the whole data, download it</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

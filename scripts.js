@@ -1,4 +1,4 @@
-/*Ranking Script*/
+dt/*Ranking Script*/
 /* --------------------- Load the datasets -------------------------*/
 
 var URLS = [
@@ -14,11 +14,11 @@ var boroR = {"Manhattan":"1","Bronx":"2","Brooklyn":"3","Queens":"4","Staten Isl
 var boroRCAPS = {"MANHATTAN":"1","BRONX":"2","BROOKLYN":"3","QUEENS":"4","STATEN ISLAND":"5"};
 
 var iconUrls = {
-    house:"https://image.flaticon.com/icons/svg/608/608671.svg",
-    museum:"https://image.flaticon.com/icons/svg/252/252032.svg",
-    neighborhood:"https://image.flaticon.com/icons/svg/459/459273.svg",
-    uni:"https://image.flaticon.com/icons/svg/186/186335.svg",
-    subway:"https://image.flaticon.com/icons/svg/744/744537.svg"
+    house:"https://raw.githubusercontent.com/ermahechap/Ironhacks/master/src/house.png",
+    museum:"https://raw.githubusercontent.com/ermahechap/Ironhacks/master/src/museum.png",
+    neighborhood:"https://raw.githubusercontent.com/ermahechap/Ironhacks/master/src/neighborhood.png",
+    uni:"https://raw.githubusercontent.com/ermahechap/Ironhacks/master/src/uni.png",
+    subway:"https://raw.githubusercontent.com/ermahechap/Ironhacks/master/src/train.png"
 }
 
 var boroughs = { // in this one we build the "dataframe"
@@ -33,6 +33,8 @@ var nonHabitable = 20;//all district with bumer over 50 are not habitable.
 var nonHabitableColor = "#000000";
 //new way to handle data, it is better and more organized
 var geoshapesData,neighborhoodData,housingData,museumsData,crimeData,subwayData;
+
+var neighborhoodHeaders,housingHeaders,museumsHeaders, crimeHeaders,subwayHeaders;
 
 function processGeoshapes(){
     let len = geoshapesData.length;
@@ -109,7 +111,8 @@ function processHousing(){
                         position:point,
                         icon: createIcon(iconUrls.house),
                         title: housingData[i][9]
-                    })
+                    }),
+                    lowIncome:parseInt(housingData[i][31])
                 });
                 boroughs[id].districts[j].number_units += parseInt(housingData[i][31]);//add low income units
                 break;
@@ -252,22 +255,38 @@ function loadData(){
         processMuseums();
         processSubway();
         processCrime();
-        //for the rank, rankFunction
-        rankFunction();
-
-        //apend to tableRanks
-        createtable("#table-ranking-map",263);//263 is a bitmask, check function for details
-        createtable("#table-ranking-dashboard",511);
-        dashboardTableClick();//for the click event
-        mapRankTableClick(); // for the click event
+        generateRankingStuff();
         //create selector for tab1 of map
         for(var i = 1 ; i<=5;i++){
             $('#boro-map').append('<option value="' + i + '">' + boroughs[i].boro_name+ '</option>');
         }
+
+        //leztes
+        $(".downloads-select input[value = 1]").trigger("click");//awful, but meh!
     })
 }
 
 /*----------------------------------------Scripts Ranking--------------------------------*/
+
+function generateRankingStuff(){
+    //Ranking
+    createRankDataFrame();
+    //create ranks for dashboard, by characteristic
+    rankFunction("safety_score");
+    createtable("#table-crimes-rank",39,10);
+    rankFunction("affordability_score");
+    createtable("#table-units-rank",23,10);
+    rankFunction("distance_score");
+    createtable("#table-distance-rank",15,10);
+
+    //Map and dashboard general rank
+    rankFunction("overall_score");
+    createtable("#table-ranking-map",263,null);//263 is a bitmask, check function for details
+    createtable("#table-ranking-dashboard",511,null);
+    dashboardTableClick();//for the click event
+    mapRankTableClick(); // for the click event
+    console.log("Ranking done!");
+}
 
 /*
 >Variables considered in the ranking:
@@ -313,7 +332,7 @@ var zscore = function(data){
 }
 
 
-function rankFunction(){//executed when all data is loaded
+function createRankDataFrame(){
     for(let i = 1;i<=5;i++){
         let lenDist = boroughs[i].districts.length;
         for (let j = 0 ; j<lenDist;j++){
@@ -346,14 +365,17 @@ function rankFunction(){//executed when all data is loaded
         districtsRank[i].transportation_score = ztransport[i];
         districtsRank[i].overall_score = (-zdistance[i]) + zaffordable[i] + zsafety[i] + zculture[i] + ztransport[i];
     }
-    districtsRank.sort(function(a,b){return b.overall_score - a.overall_score;});
+}
+
+function rankFunction(parameter){//executed when all data is loaded
+    districtsRank.sort(function(a,b){return b[parameter] - a[parameter];});
+    let lenRank = districtsRank.length;
     for(let i = 0 ; i < lenRank ; i++)districtsRank[i].rank = i+1;
-    console.log("Score and ranking done");
 }
 
 //rowMask allows me to pick the columns I want.
 //rank - 1 , borough - 2, District - 4, Distance - 8, Affortability - 16, Safety - 32, Culture - 64, Transit -128, TotalScore-256
-function createtable(container_id,rowMask){ // component to create ranking tables in the id received
+function createtable(container_id,rowMask,qt){ // component to create ranking tables in the id received, qt limits the number of rows
     let tableHeader = '<thead class = "thead-dark"><tr>'
         +((rowMask&1)?'<th scope = "col">#</th>':'')
         +((rowMask&2)?'<th scope="col">Bor</th>':'')
@@ -369,6 +391,7 @@ function createtable(container_id,rowMask){ // component to create ranking table
     $(container_id).append('<tbody></tbody>');
     let len = districtsRank.length;
     for(let i = 0 ; i <len ; i++){
+        if(qt!=null && qt--<=0)break;
         $(container_id).find('tbody').append(
             '<tr class = "rowCursor">'
             +((rowMask&1)?('<th scope="row">'+districtsRank[i].rank +'</th>'):'')
@@ -385,6 +408,49 @@ function createtable(container_id,rowMask){ // component to create ranking table
     }
 }
 
+function customTableCreate(dt,headers,id_table,from,to){ //creates the table you want, requires headers and data object dt
+    let cols = headers.length;
+    let heads = '<thead class = "thead-dark"><tr>',content ='<tbody>';
+    for(let i = 0 ; i<cols;i++){
+        heads +='<th scope="col">'+ headers[i] +'</th>';
+    }
+    heads +='</tr></thead>';
+    let dataLen = dt.length;
+    for(let i = from ; i<dataLen;i++){
+        if(i==to)break;
+        content +='<tr>'
+        for(let key in dt[i]){
+            if(dt[i].hasOwnProperty(key) && key!="mapsLocation"){
+                content +='<td>'+ dt[i][key] +'</td>';
+            }
+        }
+        content +='</tr>'
+    }
+    content+='</tbody>';
+    $(id_table).append(heads).append(content);
+}
+
+function createCSV(dt,headers){
+    let csv = headers.join(",")+"\n";
+
+    let len = dt.length, cols = headers.length;
+    for(let i = 0 ; i<len;i++){
+        let ct = 0;
+        for(let key in dt[i]){
+            csv += dt[i][key]
+            if(ct++!=cols-1)csv+=",";
+        }
+        csv+="\n";
+    }
+
+    let filename = 'export.csv', link, data;
+    if (!csv.match(/^data:text\/csv/i))csv = 'data:text/csv;charset=utf-8,' + csv;
+    data = encodeURI(csv);
+
+    link = document.getElementById("download-btn");
+    link.setAttribute('href', data);
+    link.setAttribute('download', filename);
+}
 
 /*---------------------------- Google maps scripts and other functions ----------------- */
 var mapStyle = [
@@ -742,7 +808,6 @@ function reescale(val){
     while(val>200)val/=10;
     return Math.ceil(val)+100;
 }
-
 function bubbleChart(container_id,id_boro,id_district,picked){
     $(container_id).empty();//remove svg
     if(!picked)return;
@@ -834,6 +899,124 @@ function bubbleChart(container_id,id_boro,id_district,picked){
         .attr("text-anchor", "middle")
         .style("font","30px")
         .text(function(d){return d.val;});
+
+}
+
+
+var colorsDashboard = ["#ff0000","#ff8d00","#ffdb00","#00d619","#009fff"];
+function barChart(container_id,which_bar,no_data){
+    //clear div
+    $(container_id).empty();
+    if(no_data){
+        $(container_id).append(
+            '<svg viewBox="0 0 670 350" preserveAspectRatio="xMidYMid" style="width: 100%;"><rect width="100%" height="100%" fill="#d1d1d1"></rect><text x="50%" y="50%" alignment-base="middle" text-anchor="middle" style="font-size: 100px; fill: rgb(121, 121, 121);">No-data</text></svg>'
+        );
+        return;
+    }
+    //parse data into a dataFrame
+    let dat = [],maxVal = 0,ct=0;
+    for(let it in chosenOnes){
+        let id_boro = chosenOnes[it].id_boro, id_district = chosenOnes[it].id_district+1;
+        let val = boroughs[id_boro].districts[id_district-1][which_bar];
+        maxVal - Math.max(maxVal,val);
+        dat.push({
+            boro_district: boroughs[id_boro].boro_name+ "-" +id_district,
+            val:val,
+            col:colorsDashboard[ct++]
+        });
+    }
+    //build svg
+
+    let margin = {top: 10,right:50,bottom:20,left:50};
+    let width = 600 -margin.left - margin.right;
+    let height = 300 -margin.top - margin.bottom;
+
+    let svg = d3.select(container_id).append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("viewBox",'0 0 '+600+' '+ 300)
+        .attr("preserveAspectRatio","xMidYMid")
+        .style('width', '100%')
+        .append("g")
+        .attr("transform","translate(" + margin.left + "," + margin.top +")");
+
+    let x = d3.scaleBand().range([0,width]);
+    let y = d3.scaleLinear().range([height,0]);
+
+    x.domain(dat.map(function(d){return d.boro_district;}));
+    y.domain([0, d3.max(dat,function(d){return d.val;})]);
+
+    svg.append("g")
+    .attr("transform","translate(0,"+ height +")")
+    .call(d3.axisBottom(x));
+
+    svg.append("g")
+    .call(d3.axisLeft(y));
+
+    svg.selectAll(".bar").data(dat).enter().append("rect")
+        .attr("class","bar")
+        .attr("fill",function(d){return d.col;})
+        .attr("x",function(d){return x(d.boro_district); })
+        .attr("y",function(d){return y(d.val); })
+        .attr("width",x.bandwidth())
+        .attr("height",function(d){return height-y(d.val); });
+
+}
+
+function ringChart(container_id,which_bar,no_data){
+    //clear div
+    $(container_id).empty();
+    if(no_data){
+        $(container_id).append(
+            '<svg viewBox="0 0 670 350" preserveAspectRatio="xMidYMid" style="width: 100%;"><rect width="100%" height="100%" fill="#d1d1d1"></rect><text x="50%" y="50%" alignment-base="middle" text-anchor="middle" style="font-size: 100px; fill: rgb(121, 121, 121);">No-data</text></svg>'
+        );
+        return;
+    }
+    //parse data into a dataFrame
+    let dat = [],maxVal = 0,ct=0;
+    for(let it in chosenOnes){
+        let id_boro = chosenOnes[it].id_boro, id_district = chosenOnes[it].id_district+1;
+        let val = boroughs[id_boro].districts[id_district-1][which_bar];
+        maxVal - Math.max(maxVal,val);
+        dat.push({
+            boro_district: boroughs[id_boro].boro_name+ "-" +id_district,
+            val:Math.round(val),
+            col:colorsDashboard[ct++]
+        });
+    }
+
+    //graph
+
+    let width = 400, height = 400, radius = 200;
+    let svg = d3.select(container_id).append("svg")
+    .attr("width",width)
+    .attr("height",height)
+    .attr("viewBox",'0 0 '+width+' '+ height)
+    .attr("preserveAspectRatio","xMidYMid")
+    .style('width', '100%')
+    .append("g")
+    .attr("transform","translate("+ width/2 +","+ height/2 +")");
+
+    let arc = d3.arc().outerRadius(radius-10).innerRadius(radius-70);
+
+    let pie = d3.pie()
+        .sort(null)
+        .value(function(d){return d.val;});
+
+
+    let g = svg.selectAll(".arc").data(pie(dat)).enter()
+        .append("g")
+        .attr("class","arc");
+
+    g.append("path")
+        .attr("d",arc)
+        .attr("class","bar")
+        .style('fill',function(d){return d.data.col;});
+
+    g.append("text")
+        .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+        .attr("dy", ".35em")
+        .text(function(d) { return (d.value==0)?'':d.value; });
 
 }
 
@@ -1069,12 +1252,13 @@ function dashboardTableClick(){
 }
 
 function updateDashCharts(){
+    let no_data = qt==0;
     updateLegend("#legend-dashboard");
-    barChart("#dashboard-bar-crimes","number_crimes");
-    ringChart("#dashboard-distance-ring","distance");
-    ringChart("#dashboard-units-ring","number_units");
-    ringChart("#dashboard-museums-ring","number_museums");
-    ringChart("#dashboard-subways-ring","number_subs");
+    barChart("#dashboard-bar-crimes","number_crimes",no_data);
+    ringChart("#dashboard-distance-ring","distance",no_data);
+    ringChart("#dashboard-units-ring","number_units",no_data);
+    ringChart("#dashboard-museums-ring","number_museums",no_data);
+    ringChart("#dashboard-subways-ring","number_subs",no_data);
 }
 
 function updateLegend(container_id){
@@ -1093,109 +1277,120 @@ function updateLegend(container_id){
 }
 
 
-var colorsDashboard = ["#ff0000","#ff8d00","#ffdb00","#00d619","#009fff"];
+/*---Downloads Interactions-----*/
 
-function barChart(container_id,which_bar){
-    //clear div
-    $(container_id).empty();
-    //parse data into a dataFrame
-    let dat = [],maxVal = 0,ct=0;
-    for(let it in chosenOnes){
-        let id_boro = chosenOnes[it].id_boro, id_district = chosenOnes[it].id_district+1;
-        let val = boroughs[id_boro].districts[id_district-1][which_bar];
-        maxVal - Math.max(maxVal,val);
-        dat.push({
-            boro_district: boroughs[id_boro].boro_name+ "-" +id_district,
-            val:val,
-            col:colorsDashboard[ct++]
-        });
-    }
-    //build svg
-
-    let margin = {top: 10,right:50,bottom:20,left:50};
-    let width = 600 -margin.left - margin.right;
-    let height = 300 -margin.top - margin.bottom;
-
-    let svg = d3.select(container_id).append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .attr("viewBox",'0 0 '+600+' '+ 300)
-        .attr("preserveAspectRatio","xMidYMid")
-        .style('width', '100%')
-        .append("g")
-        .attr("transform","translate(" + margin.left + "," + margin.top +")");
-
-    let x = d3.scaleBand().range([0,width]);
-    let y = d3.scaleLinear().range([height,0]);
-
-    x.domain(dat.map(function(d){return d.boro_district;}));
-    y.domain([0, d3.max(dat,function(d){return d.val;})]);
-
-    svg.append("g")
-    .attr("transform","translate(0,"+ height +")")
-    .call(d3.axisBottom(x));
-
-    svg.append("g")
-    .call(d3.axisLeft(y));
-
-    svg.selectAll(".bar").data(dat).enter().append("rect")
-        .attr("class","bar")
-        .attr("fill",function(d){return d.col;})
-        .attr("x",function(d){return x(d.boro_district); })
-        .attr("y",function(d){return y(d.val); })
-        .attr("width",x.bandwidth())
-        .attr("height",function(d){return height-y(d.val); });
-
+function latLngString(objLatLng){
+    return "("+ objLatLng.lat + " "+objLatLng.lng +")";
 }
 
-
-function ringChart(container_id,which_bar){
-    //clear div
-    $(container_id).empty();
-    //parse data into a dataFrame
-    let dat = [],maxVal = 0,ct=0;
-    for(let it in chosenOnes){
-        let id_boro = chosenOnes[it].id_boro, id_district = chosenOnes[it].id_district+1;
-        let val = boroughs[id_boro].districts[id_district-1][which_bar];
-        maxVal - Math.max(maxVal,val);
-        dat.push({
-            boro_district: boroughs[id_boro].boro_name+ "-" +id_district,
-            val:Math.round(val),
-            col:colorsDashboard[ct++]
-        });
+var dt, headers;//for tables
+$(".downloads-select input[type=radio]").on('change',function(){
+    $("#table-downloads").empty();
+    console.log(this.value);
+    //here I have to change the tables values to create it, based on the query(parse dt)
+    if(this.value == 1){//rank
+        headers = ["rank","id_boro","id_district","distance_score","affordability_score",
+        "safety_score","culture_score","transportation_score","overall_score"];
+        dt = districtsRank;
+    }else if(this.value == 2){//neighborhood
+        headers = ["Borough","District","Location","Name"];
+        dt = [];
+        for(let i = 1 ; i<=5;i++){
+            let lenDistro = boroughs[i].districts.length;
+            for(let j = 0 ; j<lenDistro;j++){
+                let lenN = boroughs[i].districts[j].neighborhoods.length;
+                for(let k = 0 ; k<lenN ;k++){
+                    dt.push({
+                        a: boroughs[i].boro_name,
+                        b: j+1,
+                        c: latLngString(boroughs[i].districts[j].neighborhoods[k].location),
+                        d: boroughs[i].districts[j].neighborhoods[k].name
+                    });
+                }
+            }
+        }
+    }else if(this.value == 3){//housing
+        headers = ["Borough","District","Location","Name","Low Income Units"];
+        dt = [];
+        for(let i = 1 ; i<=5;i++){
+            let lenDistro = boroughs[i].districts.length;
+            for(let j = 0 ; j<lenDistro;j++){
+                let lenN = boroughs[i].districts[j].housing.length;
+                for(let k = 0 ; k<lenN ;k++){
+                    dt.push({
+                        a: boroughs[i].boro_name,
+                        b: j+1,
+                        c: latLngString(boroughs[i].districts[j].housing[k].location),
+                        d: boroughs[i].districts[j].housing[k].name,
+                        e: boroughs[i].districts[j].housing[k].lowIncome
+                    });
+                }
+            }
+        }
+    }else if(this.value == 4){//Crimes
+        headers = ["Borough","District","Crime Description","Location","Date"];
+        dt = [];
+        for(let i = 1 ; i<=5;i++){
+            let lenDistro = boroughs[i].districts.length;
+            for(let j = 0 ; j<lenDistro;j++){
+                let lenN = boroughs[i].districts[j].crimes.length;
+                for(let k = 0 ; k<lenN ;k++){
+                    dt.push({
+                        a: boroughs[i].boro_name,
+                        b: j+1,
+                        c: boroughs[i].districts[j].crimes[k].description,
+                        e: latLngString(boroughs[i].districts[j].crimes[k].location),
+                        f: boroughs[i].districts[j].crimes[k].date,
+                    });
+                }
+            }
+        }
+    }else if(this.value == 5){//museums
+        headers = ["Borough","District","Name","Address","Location","Tel","URL"];
+        dt = [];
+        for(let i = 1 ; i<=5;i++){
+            let lenDistro = boroughs[i].districts.length;
+            for(let j = 0 ; j<lenDistro;j++){
+                let lenN = boroughs[i].districts[j].museums.length;
+                for(let k = 0 ; k<lenN ;k++){
+                    dt.push({
+                        a: boroughs[i].boro_name,
+                        b: j+1,
+                        c: boroughs[i].districts[j].museums[k].name,
+                        e: boroughs[i].districts[j].museums[k].address,
+                        f: latLngString(boroughs[i].districts[j].museums[k].location),
+                        g: boroughs[i].districts[j].museums[k].tel,
+                        h: boroughs[i].districts[j].museums[k].url
+                    });
+                }
+            }
+        }
+    }else{//subway
+        headers = ["Borough","District","Name","Linie","Corner","Location"];
+        dt = [];
+        for(let i = 1 ; i<=5;i++){
+            let lenDistro = boroughs[i].districts.length;
+            for(let j = 0 ; j<lenDistro;j++){
+                let lenN = boroughs[i].districts[j].subways.length;
+                for(let k = 0 ; k<lenN ;k++){
+                    dt.push({
+                        a: boroughs[i].boro_name,
+                        b: j+1,
+                        c: boroughs[i].districts[j].subways[k].name,
+                        e: boroughs[i].districts[j].subways[k].linie,
+                        f: boroughs[i].districts[j].subways[k].corner,
+                        g: latLngString(boroughs[i].districts[j].subways[k].location)
+                    });
+                }
+            }
+        }
     }
+    customTableCreate(dt,headers,"#table-downloads",0,100);
+    createCSV(dt,headers);
+});
 
-    //graph
-
-    let width = 400, height = 400, radius = 200;
-    let svg = d3.select(container_id).append("svg")
-    .attr("width",width)
-    .attr("height",height)
-    .attr("viewBox",'0 0 '+width+' '+ height)
-    .attr("preserveAspectRatio","xMidYMid")
-    .style('width', '100%')
-    .append("g")
-    .attr("transform","translate("+ width/2 +","+ height/2 +")");
-
-    let arc = d3.arc().outerRadius(radius-10).innerRadius(radius-70);
-
-    let pie = d3.pie()
-        .sort(null)
-        .value(function(d){return d.val;});
-
-
-    let g = svg.selectAll(".arc").data(pie(dat)).enter()
-        .append("g")
-        .attr("class","arc");
-
-    g.append("path")
-        .attr("d",arc)
-        .attr("class","bar")
-        .style('fill',function(d){return d.data.col;});
-
-    g.append("text")
-        .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
-        .attr("dy", ".35em")
-        .text(function(d) { return (d.value==0)?'':d.value; });
-
-}
+$("#download-btn").click(function(){
+    if(dt==null){
+        alert("First pick a table to download");
+    }
+});
