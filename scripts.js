@@ -1027,7 +1027,7 @@ var MyVar;
 function waitLoad(){
     //loadBasicInfo();
     loadData();
-    myVar = setTimeout(showPage, 1000);
+    myVar = setTimeout(showPage, 1500);
 }
 
 function showPage() {
